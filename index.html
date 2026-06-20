@@ -3,12 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arrastrar 3D</title>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js">
-    </script>
+    <title>🚛 Carga Máxima - Control Total</title>
 
     <style>
         * {
@@ -18,88 +13,809 @@
         }
 
         body {
-            background: #111;
-            overflow: hidden;
-            height: 100vh;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            color: #2d3748;
+            min-height: 100vh;
+            padding: 15px;
+            overflow-y: auto;
         }
 
-        #container {
-            width: 100vw;
-            height: 100vh;
-            display: block;
-            cursor: default;
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
         }
 
-        #container.dragging {
-            cursor: grabbing;
-        }
-        #container.pointer {
-            cursor: pointer;
-        }
-
-        .ui {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7);
-            padding: 8px 20px;
-            border-radius: 6px;
-            color: #888;
-            font-size: 13px;
-            z-index: 10;
+        .header {
             display: flex;
-            gap: 25px;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: white;
+            z-index: 100;
+            position: sticky;
+            top: 0;
+            padding-top: 10px;
         }
 
-        .ui span {
-            color: #fff;
+        .header h1 {
+            font-size: 22px;
+            color: #1a202c;
+        }
+        .header h1 span {
+            color: #2b6cb0;
+        }
+        .header .sub {
+            font-size: 12px;
+            color: #718096;
         }
 
-        .ui .ok {
-            color: #6bcb77;
+        .player-info {
+            display: flex;
+            gap: 15px;
+            background: #f7fafc;
+            padding: 6px 16px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .player-info .item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            color: #4a5568;
+        }
+
+        .player-info .item .num {
+            font-weight: bold;
+            font-size: 16px;
+            min-width: 20px;
+            text-align: center;
+        }
+        .player-info .item .num.gold {
+            color: #d69e2e;
+        }
+        .player-info .item .num.green {
+            color: #38a169;
+        }
+        .player-info .item .num.blue {
+            color: #2b6cb0;
+        }
+        .player-info .item .num.pink {
+            color: #e53e3e;
+        }
+        .player-info .item .num.orange {
+            color: #dd6b20;
+        }
+
+        .method-selector {
+            display: flex;
+            gap: 4px;
+            background: #edf2f7;
+            padding: 3px;
+            border-radius: 6px;
+        }
+
+        .method-btn {
+            padding: 3px 14px;
+            border: none;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: transparent;
+            color: #718096;
+        }
+        .method-btn:hover {
+            background: #e2e8f0;
+        }
+        .method-btn.active-fifo {
+            background: #38a169;
+            color: white;
+        }
+        .method-btn.active-lifo {
+            background: #e53e3e;
+            color: white;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .map-section {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .map-section h2 {
+            font-size: 16px;
+            color: #2d3748;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .map-section h2 .badge-auto {
+            font-size: 11px;
+            background: #ebf8ff;
+            color: #2b6cb0;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .map-container {
+            background: #ffffff;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            position: relative;
+            overflow: visible;
+            min-height: 600px;
+        }
+
+        .map-svg {
+            width: 100%;
+            height: auto;
+            display: block;
+            min-height: 650px;
+        }
+
+        .city-dot {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .city-dot circle {
+            transition: all 0.3s;
+        }
+
+        .city-dot:hover circle {
+            r: 16;
+            stroke-width: 3;
+        }
+
+        .city-dot .city-label {
+            font-size: 11px;
+            font-weight: 600;
+            fill: #2d3748;
+            dominant-baseline: middle;
+            text-anchor: middle;
+            pointer-events: none;
+            text-shadow: 0 0 4px white, 0 0 4px white;
+        }
+
+        .city-dot .city-label.small {
+            font-size: 9px;
+        }
+
+        .city-dot .truck-icon {
+            font-size: 18px;
+            pointer-events: none;
+            dominant-baseline: central;
+            text-anchor: middle;
+        }
+
+        .city-dot .badge-text {
+            font-size: 9px;
+            font-weight: 700;
+            pointer-events: none;
+            dominant-baseline: central;
+            text-anchor: middle;
+        }
+
+        .road {
+            stroke: #cbd5e0;
+            stroke-width: 3;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .road.highway {
+            stroke: #2b6cb0;
+            stroke-width: 4;
+            opacity: 0.7;
+        }
+
+        .road.secondary {
+            stroke: #a0aec0;
+            stroke-width: 2.5;
+            stroke-dasharray: 6, 4;
+            opacity: 0.6;
+        }
+
+        .road:hover {
+            stroke: #dd6b20;
+            stroke-width: 4;
+            opacity: 1;
+        }
+
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: #f7fafc;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+            font-size: 10px;
+            color: #718096;
+        }
+
+        .legend .item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend .line {
+            width: 25px;
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        .legend .line.highway {
+            background: #2b6cb0;
+        }
+        .legend .line.secondary {
+            background: #a0aec0;
+            background-image: repeating-linear-gradient(90deg, #a0aec0, #a0aec0 6px, transparent 6px, transparent 10px);
+        }
+
+        .legend .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid #cbd5e0;
+        }
+        .legend .dot.has-cargo {
+            background: #fffbeb;
+            border-color: #d69e2e;
+        }
+        .legend .dot.origin {
+            background: #f0fff4;
+            border-color: #38a169;
+        }
+        .legend .dot.destination {
+            background: #fff5f5;
+            border-color: #e53e3e;
+        }
+
+        .panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            position: sticky;
+            top: 80px;
+        }
+
+        .panel-card {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 14px;
+            border: 1px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+
+        .panel-card h3 {
+            font-size: 14px;
+            color: #2d3748;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ===== CAMIÓN CON ACCIONES ===== */
+        .truck-status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            background: #ffffff;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .truck-status .icon {
+            font-size: 22px;
+        }
+        .truck-status .info {
+            flex: 1;
+        }
+        .truck-status .info .location {
+            font-size: 13px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        .truck-status .info .cargo {
+            font-size: 11px;
+            color: #718096;
+        }
+        .truck-status .info .method-indicator {
+            font-size: 10px;
+            color: #718096;
+            margin-top: 2px;
+        }
+
+        .truck-status .capacity {
+            display: flex;
+            gap: 3px;
+        }
+
+        .truck-status .capacity .slot {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            border: 1px solid #e2e8f0;
+            background: #f7fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 7px;
+            font-weight: bold;
+            color: transparent;
+        }
+
+        .truck-status .capacity .slot.filled {
+            background: #2b6cb0;
+            border-color: #2b6cb0;
+            color: white;
+        }
+
+        .truck-status .capacity .slot.fifo-next {
+            background: #38a169;
+            border-color: #38a169;
+            color: white;
+            animation: pulse-green 1s infinite;
+        }
+
+        .truck-status .capacity .slot.lifo-next {
+            background: #e53e3e;
+            border-color: #e53e3e;
+            color: white;
+            animation: pulse-red 1s infinite;
+        }
+
+        @keyframes pulse-green {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+        }
+
+        @keyframes pulse-red {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+        }
+
+        /* ===== ACCIONES DENTRO DE MI CAMIÓN ===== */
+        .truck-actions {
+            background: #ffffff;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            padding: 10px 12px;
+            margin-top: 8px;
+        }
+
+        .truck-actions .action-section {
+            margin-bottom: 8px;
+        }
+
+        .truck-actions .action-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .truck-actions .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #4a5568;
+            margin-bottom: 4px;
+        }
+
+        .truck-actions .section-title .icon {
+            margin-right: 4px;
+        }
+
+        .truck-actions .order-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 8px;
+            background: #f7fafc;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-bottom: 3px;
+            border-left: 3px solid #d69e2e;
+        }
+
+        .truck-actions .order-row .dest {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .truck-actions .order-row .value {
+            color: #d69e2e;
+            font-weight: 600;
+        }
+
+        .truck-actions .order-row .btn-load {
+            background: #dd6b20;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 2px 10px;
+            font-size: 9px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .truck-actions .order-row .btn-load:hover:not(:disabled) {
+            background: #c05621;
+        }
+
+        .truck-actions .order-row .btn-load:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .truck-actions .order-row.deliver-row {
+            border-left-color: #e53e3e;
+        }
+
+        .truck-actions .btn-deliver {
+            width: 100%;
+            padding: 5px;
+            background: #38a169;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 4px;
+        }
+
+        .truck-actions .btn-deliver:hover:not(:disabled) {
+            background: #276749;
+        }
+
+        .truck-actions .btn-deliver:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .truck-actions .empty-message {
+            color: #a0aec0;
+            font-size: 12px;
+            padding: 4px 0;
+        }
+
+        .truck-actions .space-info {
+            font-size: 10px;
+            color: #718096;
+            margin-top: 6px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 6px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        /* ===== FIN ACCIONES ===== */
+
+        .dispatch-guide {
+            background: #ffffff;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .dispatch-guide .header-guide {
+            background: #edf2f7;
+            padding: 6px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: #4a5568;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .dispatch-guide .header-guide .method-label {
+            font-size: 10px;
+            font-weight: 400;
+            color: #718096;
+        }
+
+        .dispatch-item {
+            display: flex;
+            align-items: center;
+            padding: 5px 12px;
+            border-bottom: 1px solid #f0f2f5;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+        .dispatch-item:last-child {
+            border-bottom: none;
+        }
+
+        .dispatch-item .order-num {
+            width: 24px;
+            font-weight: 700;
+            color: #a0aec0;
+            font-size: 10px;
+        }
+
+        .dispatch-item .cargo-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dispatch-item .cargo-info .dest {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 11px;
+        }
+
+        .dispatch-item .cargo-info .arrow {
+            color: #cbd5e0;
+        }
+
+        .dispatch-item .cargo-info .origin {
+            color: #718096;
+            font-size: 10px;
+        }
+
+        .dispatch-item .status-badge {
+            font-size: 8px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .dispatch-item .status-badge.next {
+            background: #c6f6d5;
+            color: #276749;
+            animation: pulse-green 1s infinite;
+        }
+
+        .dispatch-item .status-badge.next-lifo {
+            background: #feb2b2;
+            color: #9b2c2c;
+            animation: pulse-red 1s infinite;
+        }
+
+        .dispatch-item.next {
+            background: #f0fff4;
+            border-left: 3px solid #38a169;
+        }
+        .dispatch-item.next-lifo {
+            background: #fff5f5;
+            border-left: 3px solid #e53e3e;
+        }
+        .dispatch-empty {
+            padding: 15px;
+            text-align: center;
+            color: #a0aec0;
+            font-size: 12px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
         }
 
         .btn {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.05);
-            color: #666;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 6px 20px;
-            border-radius: 4px;
+            padding: 6px 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
             cursor: pointer;
-            font-size: 12px;
-            z-index: 10;
-            transition: 0.3s;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            flex: 1;
+            min-width: 70px;
         }
 
-        .btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
+        .btn-primary {
+            background: #2b6cb0;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #2c5282;
+        }
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .btn-danger {
+            background: #e53e3e;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c53030;
+        }
+
+        .btn-auto {
+            background: #805ad5;
+            color: white;
+        }
+        .btn-auto:hover {
+            background: #6b46c1;
+        }
+
+        .orders-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .orders-list .order-item {
+            background: #ffffff;
+            padding: 5px 10px;
+            border-radius: 6px;
+            border-left: 3px solid #d69e2e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+            border: 1px solid #e2e8f0;
+            border-left-width: 3px;
+        }
+
+        .orders-list .order-item .from {
+            color: #38a169;
+            font-weight: 600;
+        }
+        .orders-list .order-item .to {
+            color: #e53e3e;
+            font-weight: 600;
+        }
+        .orders-list .order-item .value {
+            color: #d69e2e;
+            font-weight: 600;
+        }
+
+        .orders-list .order-item .status {
+            font-size: 8px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .orders-list .order-item .status.pending {
+            background: #fefcbf;
+            color: #975a16;
+        }
+        .orders-list .order-item .status.loaded {
+            background: #bee3f8;
+            color: #2a69ac;
+        }
+        .orders-list .order-item .status.delivered {
+            background: #c6f6d5;
+            color: #276749;
+        }
+
+        .auto-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+        }
+
+        .auto-controls .label {
+            font-size: 11px;
+            color: #718096;
+        }
+        .auto-controls .timer-display {
+            font-size: 14px;
+            font-weight: 700;
+            color: #805ad5;
+            min-width: 60px;
+            text-align: center;
+        }
+        .auto-controls .slider {
+            flex: 1;
+            min-width: 100px;
+            accent-color: #805ad5;
+        }
+        .auto-controls .slider-value {
+            font-size: 11px;
+            color: #718096;
+            min-width: 40px;
         }
 
         .toast {
             position: fixed;
-            bottom: 80px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            padding: 6px 18px;
-            border-radius: 4px;
-            font-size: 12px;
-            z-index: 20;
-            animation: fade 0.3s ease;
-            pointer-events: none;
+            background: #1a202c;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 13px;
+            z-index: 1000;
+            animation: toast-in 0.3s ease;
+            max-width: 90%;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
-        @keyframes fade {
+        .toast.success {
+            border-left: 4px solid #38a169;
+        }
+        .toast.error {
+            border-left: 4px solid #e53e3e;
+        }
+        .toast.warning {
+            border-left: 4px solid #dd6b20;
+        }
+
+        @keyframes toast-in {
             from {
                 opacity: 0;
                 transform: translateX(-50%) translateY(10px);
@@ -109,440 +825,1080 @@
                 transform: translateX(-50%) translateY(0);
             }
         }
+
+        .orders-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .orders-list::-webkit-scrollbar-track {
+            background: #f7fafc;
+            border-radius: 2px;
+        }
+        .orders-list::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 2px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            .header h1 {
+                font-size: 18px;
+            }
+            .panel {
+                position: static;
+            }
+            .panel-card {
+                padding: 10px;
+            }
+            .btn {
+                font-size: 9px;
+                padding: 5px 10px;
+                min-width: 50px;
+            }
+            .player-info {
+                gap: 6px;
+                padding: 4px 8px;
+            }
+            .player-info .item {
+                font-size: 10px;
+            }
+            .player-info .item .num {
+                font-size: 13px;
+                min-width: 16px;
+            }
+            .method-selector {
+                gap: 3px;
+            }
+            .method-btn {
+                font-size: 9px;
+                padding: 2px 8px;
+            }
+            .dispatch-item {
+                font-size: 9px;
+                padding: 4px 8px;
+                flex-wrap: wrap;
+            }
+            .dispatch-item .order-num {
+                width: 18px;
+                font-size: 8px;
+            }
+            .truck-status {
+                flex-wrap: wrap;
+            }
+            .auto-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .auto-controls .slider {
+                width: 100%;
+            }
+            .city-dot .city-label {
+                font-size: 9px;
+            }
+            .city-dot .city-label.small {
+                font-size: 8px;
+            }
+            .legend {
+                font-size: 8px;
+                gap: 8px;
+            }
+            .truck-actions .order-row {
+                font-size: 10px;
+                flex-wrap: wrap;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <div id="container"></div>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div>
+                <h1>🚛 Carga <span>Máxima</span></h1>
+                <span class="sub">Control Total - Cargar / Entregar</span>
+            </div>
+            <div class="player-info">
+                <div class="item">💰 <span class="num gold" id="money">5000</span></div>
+                <div class="item">📦 <span class="num blue" id="deliveries">0</span></div>
+                <div class="item">🚛 <span class="num pink" id="cargoCount">0</span>/6</div>
+                <div class="item">📋 <span class="num orange" id="pendingOrders">0</span></div>
+                <div class="item">⭐ <span class="num green" id="score">0</span></div>
+                <div class="item">
+                    <div class="method-selector">
+                        <button class="method-btn active-fifo" id="btnFIFO" data-method="fifo">FIFO</button>
+                        <button class="method-btn" id="btnLIFO" data-method="lifo">LIFO</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div class="ui">
-        <span>📦 <span id="total">2</span></span>
-        <span>➡️ <span class="ok" id="placed">0</span>/2</span>
+        <!-- MAIN -->
+        <div class="main-grid">
+            <!-- MAPA -->
+            <div class="map-section">
+                <h2>
+                    🗺️ Rutas de Encomiendas
+                    <span class="badge-auto">⚡ Generación Automática</span>
+                </h2>
+                <div class="map-container">
+                    <svg class="map-svg" viewBox="0 0 600 700" xmlns="http://www.w3.org/2000/svg" id="mapSvg">
+                        <!-- CARRETERAS -->
+                        <path class="road highway" d="M300,40 L160,120" />
+                        <path class="road highway" d="M160,120 L300,180" />
+                        <path class="road secondary" d="M300,180 L460,160" />
+                        <path class="road highway" d="M300,180 L300,240" />
+                        <path class="road highway" d="M300,240 L260,300" />
+                        <path class="road secondary" d="M260,300 L120,300" />
+                        <path class="road secondary" d="M260,300 L400,320" />
+                        <path class="road highway" d="M400,320 L350,400" />
+                        <path class="road secondary" d="M350,400 L180,400" />
+                        <path class="road highway" d="M350,400 L280,440" />
+                        <path class="road secondary" d="M280,440 L180,480" />
+                        <path class="road highway" d="M280,440 L280,520" />
+
+                        <!-- CIUDADES -->
+                        <g class="city-dot" data-city="arica" onclick="handleCityClick('arica')">
+                            <circle cx="300" cy="40" r="14" fill="#ebf8ff" stroke="#2b6cb0" stroke-width="2.5"/>
+                            <text x="300" y="62" class="city-label">Arica</text>
+                            <text x="300" y="40" class="badge-text" id="badge-arica" fill="#d69e2e"></text>
+                            <text x="300" y="32" class="truck-icon" id="truck-arica"></text>
+                        </g>
+
+                        <g class="city-dot" data-city="iquique" onclick="handleCityClick('iquique')">
+                            <circle cx="160" cy="120" r="14" fill="#f7fafc" stroke="#cbd5e0" stroke-width="2"/>
+                            <text x="160" y="142" class="city-label">Iquique</text>
+                            <text x="160" y="120" class="badge-text" id="badge-iquique" fill="#d69e2e"></text>
+                            <text x="160" y="112" class="truck-icon" id="truck-iquique"></text>
+                        </g>
+
+                        <g class="city-dot" data-city="calama" onclick="handleCityClick('calama')">
+                            <circle cx="460" cy="160" r="14" fill="#f7fafc" stroke="#cbd5e0" stroke-width="2"/>
+                            <text x="460" y="182" class="city-label">Calama</text>
+                            <text x="460" y="160" class="badge-text" id="badge-calama" fill="#d69e2e"></text>
+                            <text x="460" y="152" class="truck-icon" id="truck-calama"></text>
+                        </g>
+
+                        <g class="city-dot" data-city="antofagasta" onclick="handleCityClick('antofagasta')">
+                            <circle cx="300" cy="180" r="14" fill="#f7fafc" stroke="#cbd5e0" stroke-width="2"/>
+                            <text x="300" y="202" class="city-label">Antofagasta</text>
+                            <text x="300" y="180" class="badge-text" id="badge-antofagasta" fill="#d69e2e"></text>
+                            <text x="300" y="172" class="truck-icon" id="truck-antofagasta"></text>
+                        </g>
+
+                        <g class="city-dot" data-city="la_serena" onclick="handleCityClick('la_serena')">
+                            <circle cx="300" cy="240" r="14" fill="#f7fafc" stroke="#cbd5e0" stroke-width="2"/>
+                            <text x="300" y="262" class="city-label">La Serena</text>
+                            <text x="300" y="240" class="badge-text" id="badge-la_serena" fill="#d69e2e"></text>
+                            <text x="300" y="232" class="truck-icon" id="truck-la_serena"></text>
+                        </g>
+
+                        <g class="city-dot" data-city="valparaiso" onclick="handleCityClick('valparaiso')">
+                            <circle cx="120" cy="300" r="14" fill="#f7fafc" stroke="#cbd5e0" stroke-width="2"/>
+                            <text x="120" y="322" class="city-label">Valparaíso</text>
+                            <text x="120" y="300" class="badge-text" id="badge-valparaiso" fill="#d69e2e"></text>
+                            <text x="120" y="292" class="truck-icon" id="truck-valparaiso"></text>
+                        </g>
+
+                        <g class="city-dot" data-city="santiago" onclick="handleCityClick('santiago')">
+                            <circle cx="260" cy="300" r="16" fill="#ebf8ff" stroke="#2b6cb0" stroke-width="3"/>
+                            <text x="260" y="325" class="city-label">Santiago</text>
+                            <text x="260" y="300" class="badge-text" id="badge-santiago" fill="#d69e2e"></text>
+                            <text x="260" y="292" class="truck-icon" id="truck-santiago">🚛</text>
+                        </g>
+
+                        <g class="city-dot" data-city="rancagua" onclick="handleCityClick('rancagua')">
+                            <circle cx="400" cy="320" r="14" fill="#f7fafc" stroke="#cbd5e0" stroke-width="2"/>
+                            <text x="400" y="342" class="city-label">Rancagua</text>
+                            <text x="400" y="320" class="badge-text" id="badge-rancagua" fill="#d69e2e"></text>
+                            <text x="400" y="312" class="truck-icon" id="truck-rancagua"></text>
+                        </g>
+
+                        <g class="city-dot" data-city="los_angeles" onclick="handleCityClick('los_angeles')">
+                            <circle cx="350" cy="400" r="14" fill="#f7fafc" stroke="#cbd5e0" stroke-width="2"/>
+                            <text x="350" y="422" class="city-label">Los Ángeles</text>
+                            <text x="350" y="400" class="badge-text" id="badge-los_angeles" fill="#d69e2e"></text>
+                            <text x="350" y="392" class="truck-icon" id="truck-los_angeles"></text>
+                        </g>
+
+                        <g class="city-dot" data-city="concepcion" onclick="handleCityClick('concepcion')">
+                            <circle cx="180" cy="400" r="14" fill="#f7fafc" stroke="#cbd5e0" stroke-width="2"/>
+                            <text x="180" y="422" class="city-label">Concepción</text>
+                            <text x="180" y="400" class="badge-text" id="badge-concepcion" fill="#d69e2e"></text>
+                            <text x="180" y="392" class="truck-icon" id="truck-concepcion"></text>
+                        </g>
+
+                        <g class="city-dot" data-city="temuco" onclick="handleCityClick('temuco')">
+                            <circle cx="280" cy="440" r="14" fill="#f7fafc" stroke="#cbd5e0" stroke-width="2"/>
+                            <text x="280" y="462" class="city-label">Temuco</text>
+                            <text x="280" y="440" class="badge-text" id="badge-temuco" fill="#d69e2e"></text>
+                            <text x="280" y="432" class="truck-icon" id="truck-temuco"></text>
+                        </g>
+
+                        <g class="city-dot" data-city="valdivia" onclick="handleCityClick('valdivia')">
+                            <circle cx="180" cy="480" r="14" fill="#f7fafc" stroke="#cbd5e0" stroke-width="2"/>
+                            <text x="180" y="502" class="city-label">Valdivia</text>
+                            <text x="180" y="480" class="badge-text" id="badge-valdivia" fill="#d69e2e"></text>
+                            <text x="180" y="472" class="truck-icon" id="truck-valdivia"></text>
+                        </g>
+
+                        <g class="city-dot" data-city="puerto_montt" onclick="handleCityClick('puerto_montt')">
+                            <circle cx="280" cy="520" r="14" fill="#f7fafc" stroke="#cbd5e0" stroke-width="2"/>
+                            <text x="280" y="542" class="city-label">Pto. Montt</text>
+                            <text x="280" y="520" class="badge-text" id="badge-puerto_montt" fill="#d69e2e"></text>
+                            <text x="280" y="512" class="truck-icon" id="truck-puerto_montt"></text>
+                        </g>
+                    </svg>
+                </div>
+
+                <div class="legend">
+                    <span style="font-weight:600;color:#4a5568;">Leyenda:</span>
+                    <div class="item"><span class="line highway"></span> Ruta principal</div>
+                    <div class="item"><span class="line secondary"></span> Ruta secundaria</div>
+                    <div class="item"><span class="dot"></span> Ciudad</div>
+                    <div class="item"><span class="dot has-cargo"></span> Con encomienda</div>
+                    <div class="item"><span class="dot origin"></span> Origen</div>
+                    <div class="item"><span class="dot destination"></span> Destino</div>
+                    <div class="item">🚛 Camión</div>
+                </div>
+            </div>
+
+            <!-- PANEL -->
+            <div class="panel">
+                <!-- Camión -->
+                <div class="panel-card">
+                    <h3>🚛 Mi Camión</h3>
+                    <div class="truck-status">
+                        <span class="icon">🚛</span>
+                        <div class="info">
+                            <div class="location" id="truckLocation">📍 En: Santiago</div>
+                            <div class="cargo" id="truckCargo">Encomiendas: 0/6</div>
+                            <div class="method-indicator" id="methodIndicator">
+                                Método: <strong style="color:#38a169;">FIFO</strong>
+                            </div>
+                        </div>
+                        <div class="capacity" id="truckCapacity">
+                            <div class="slot"></div>
+                            <div class="slot"></div>
+                            <div class="slot"></div>
+                            <div class="slot"></div>
+                            <div class="slot"></div>
+                            <div class="slot"></div>
+                        </div>
+                    </div>
+
+                    <!-- ACCIONES DENTRO DEL CAMIÓN -->
+                    <div class="truck-actions" id="truckActions">
+                        <div style="color:#a0aec0;text-align:center;padding:10px;font-size:13px;">
+                            Cargando acciones...
+                        </div>
+                    </div>
+
+                    <div class="btn-group" style="margin-top:10px;">
+                        <button class="btn btn-primary" id="btnMove">🎲 Mover</button>
+                        <button class="btn btn-secondary" id="btnNewOrder">➕ Manual</button>
+                        <button class="btn btn-auto" id="btnAutoToggle">⏸️ Pausar</button>
+                    </div>
+                    <div class="auto-controls">
+                        <span class="label">⏱️ Nueva encomienda cada:</span>
+                        <span class="timer-display" id="timerDisplay">15s</span>
+                        <input type="range" class="slider" id="speedSlider" min="3" max="30" value="15">
+                        <span class="slider-value" id="sliderValue">15s</span>
+                        <span class="label" id="orderCounter" style="font-weight:bold;color:#805ad5;">
+                            📋 0 generadas
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Guía de Despacho -->
+                <div class="panel-card">
+                    <h3>📋 Guía de Despacho</h3>
+                    <div class="dispatch-guide">
+                        <div class="header-guide">
+                            <span>📦 Orden de salida</span>
+                            <span class="method-label" id="dispatchMethodLabel">
+                                Método: <strong style="color:#38a169;">FIFO</strong>
+                            </span>
+                        </div>
+                        <div id="dispatchList">
+                            <div class="dispatch-empty">Sin encomiendas en el camión</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Órdenes Pendientes -->
+                <div class="panel-card">
+                    <h3>📋 Encomiendas Pendientes <span id="pendingBadge" style="font-size:11px;color:#718096;font-weight:400;"></span></h3>
+                    <div class="orders-list" id="ordersList">
+                        <div style="color:#a0aec0;text-align:center;padding:15px;font-size:13px;">
+                            Sin encomiendas activas
+                        </div>
+                    </div>
+                    <div style="margin-top:10px;display:flex;gap:8px;">
+                        <button class="btn btn-danger" id="btnReset" style="flex:1;">🔄 Reiniciar</button>
+                        <button class="btn btn-secondary" id="btnClearOrders" style="flex:1;">🗑️ Limpiar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <button class="btn" id="reset">↺</button>
 
     <script>
         // ============================================================
-        // THREE.JS
+        // CIUDADES
         // ============================================================
-        let scene, camera, renderer, controls;
-        let groupA, groupB;
-        let box1, box2;
-        let placed = 0;
-
-        let raycaster = new THREE.Raycaster();
-        let mouse = new THREE.Vector2();
-        let selected = null;
-        let dragging = false;
-        let offset = new THREE.Vector3();
-
-        // ============================================================
-        // INICIO
-        // ============================================================
-        function init() {
-            const container = document.getElementById('container');
-
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x111122);
-
-            camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 50);
-            camera.position.set(6, 4, 8);
-            camera.lookAt(0, 0.2, 0);
-
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(container.clientWidth, container.clientHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.shadowMap.enabled = true;
-            container.appendChild(renderer.domElement);
-
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.08;
-            controls.minDistance = 4;
-            controls.maxDistance = 15;
-            controls.target.set(0, 0.2, 0);
-            controls.update();
-
-            // Luces
-            const ambient = new THREE.AmbientLight(0x404060, 0.6);
-            scene.add(ambient);
-
-            const dir = new THREE.DirectionalLight(0xffeedd, 1);
-            dir.position.set(5, 10, 5);
-            dir.castShadow = true;
-            dir.shadow.mapSize.width = 1024;
-            dir.shadow.mapSize.height = 1024;
-            dir.shadow.camera.near = 0.1;
-            dir.shadow.camera.far = 30;
-            dir.shadow.camera.left = -10;
-            dir.shadow.camera.right = 10;
-            dir.shadow.camera.top = 10;
-            dir.shadow.camera.bottom = -10;
-            scene.add(dir);
-
-            // Piso
-            createFloor();
-
-            // Áreas
-            createAreas();
-
-            // Cajas
-            createBoxes();
-
-            // Eventos
-            container.addEventListener('pointerdown', onDown);
-            container.addEventListener('pointermove', onMove);
-            container.addEventListener('pointerup', onUp);
-            container.addEventListener('pointerleave', onUp);
-
-            window.addEventListener('resize', onResize);
-
-            animate();
-            updateUI();
-
-            console.log('📦 Arrastra caja al área derecha');
-        }
+        const CITIES = [
+            { id: 'arica', name: 'Arica' },
+            { id: 'iquique', name: 'Iquique' },
+            { id: 'calama', name: 'Calama' },
+            { id: 'antofagasta', name: 'Antofagasta' },
+            { id: 'la_serena', name: 'La Serena' },
+            { id: 'valparaiso', name: 'Valparaíso' },
+            { id: 'santiago', name: 'Santiago' },
+            { id: 'rancagua', name: 'Rancagua' },
+            { id: 'los_angeles', name: 'Los Ángeles' },
+            { id: 'concepcion', name: 'Concepción' },
+            { id: 'temuco', name: 'Temuco' },
+            { id: 'valdivia', name: 'Valdivia' },
+            { id: 'puerto_montt', name: 'Pto. Montt' },
+        ];
 
         // ============================================================
-        // SUELO
+        // CONEXIONES
         // ============================================================
-        function createFloor() {
-            const grid = new THREE.GridHelper(10, 10, 0x333366, 0x222244);
-            grid.position.y = -0.01;
-            scene.add(grid);
-        }
+        const CONNECTIONS = [
+            ['arica', 'iquique'],
+            ['iquique', 'antofagasta'],
+            ['antofagasta', 'calama'],
+            ['antofagasta', 'la_serena'],
+            ['la_serena', 'santiago'],
+            ['santiago', 'valparaiso'],
+            ['santiago', 'rancagua'],
+            ['rancagua', 'los_angeles'],
+            ['los_angeles', 'concepcion'],
+            ['los_angeles', 'temuco'],
+            ['temuco', 'valdivia'],
+            ['temuco', 'puerto_montt'],
+        ];
 
-        // ============================================================
-        // ÁREAS
-        // ============================================================
-        function createAreas() {
-            // Área A (izquierda) - ROJA
-            groupA = new THREE.Group();
-            groupA.position.set(-3, 0, 0);
-            createArea(groupA, 0xff6b6b);
-            scene.add(groupA);
-
-            // Área B (derecha) - AZUL
-            groupB = new THREE.Group();
-            groupB.position.set(3, 0, 0);
-            createArea(groupB, 0x4d96ff);
-            scene.add(groupB);
-        }
-
-        function createArea(group, color) {
-            // Base visible
-            const mat = new THREE.MeshStandardMaterial({
-                color: color,
-                transparent: true,
-                opacity: 0.15,
-                roughness: 0.5,
-                metalness: 0.1
-            });
-            const mesh = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.02, 2.5), mat);
-            mesh.position.y = 0.01;
-            mesh.receiveShadow = true;
-            group.add(mesh);
-
-            // Borde
-            const edges = new THREE.EdgesGeometry(new THREE.BoxGeometry(2.5, 0.02, 2.5));
-            const lineMat = new THREE.LineBasicMaterial({
-                color: color,
-                transparent: true,
-                opacity: 0.3
-            });
-            const line = new THREE.LineSegments(edges, lineMat);
-            line.position.y = 0.02;
-            group.add(line);
-
-            // Etiqueta pequeña
-            const labelMat = new THREE.MeshStandardMaterial({
-                color: color,
-                emissive: color,
-                emissiveIntensity: 0.1
-            });
-            const label = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.25, 0.25), labelMat);
-            label.position.set(0, 0.5, 0);
-            group.add(label);
-        }
+        const MAX_CARGO = 6;
 
         // ============================================================
-        // CAJAS - DENTRO DE LAS ÁREAS
+        // ESTADO
         // ============================================================
-        function createBoxes() {
-            // Caja roja en área A
-            box1 = makeBox(0xe94560, new THREE.Vector3(0, 0.3, -0.5));
-            groupA.add(box1);
-
-            // Caja azul en área A
-            box2 = makeBox(0x4d96ff, new THREE.Vector3(0, 0.3, 0.5));
-            groupA.add(box2);
-
-            document.getElementById('total').textContent = 2;
-        }
-
-        function makeBox(color, pos) {
-            const g = new THREE.Group();
-
-            const mat = new THREE.MeshStandardMaterial({
-                color: color,
-                roughness: 0.4,
-                metalness: 0.2,
-                emissive: color,
-                emissiveIntensity: 0.05
-            });
-            const body = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), mat);
-            body.position.y = 0.25;
-            body.castShadow = true;
-            body.receiveShadow = true;
-            g.add(body);
-
-            const edge = new THREE.Mesh(
-                new THREE.BoxGeometry(0.52, 0.03, 0.52),
-                new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.08 })
-            );
-            edge.position.y = 0.5;
-            g.add(edge);
-
-            g.position.copy(pos);
-            g.userData = {
-                isBox: true,
-                origPos: pos.clone(),
-                placed: false,
-                color: color === 0xe94560 ? 'roja' : 'azul'
-            };
-
-            return g;
-        }
+        const state = {
+            money: 5000,
+            deliveries: 0,
+            score: 0,
+            truckPosition: 'santiago',
+            cargo: [],
+            orders: [],
+            orderCounter: 0,
+            gameOver: false,
+            method: 'fifo',
+            autoActive: true,
+            autoInterval: null,
+            autoSpeed: 15,
+            ordersGenerated: 0,
+            pendingOrders: 0
+        };
 
         // ============================================================
-        // INTERACCIÓN
+        // DOM
         // ============================================================
-        function onDown(e) {
-            const rect = renderer.domElement.getBoundingClientRect();
-            const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-            const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        const ordersList = document.getElementById('ordersList');
+        const dispatchList = document.getElementById('dispatchList');
+        const dispatchMethodLabel = document.getElementById('dispatchMethodLabel');
+        const truckLocation = document.getElementById('truckLocation');
+        const truckCargo = document.getElementById('truckCargo');
+        const truckCapacity = document.getElementById('truckCapacity');
+        const methodIndicator = document.getElementById('methodIndicator');
+        const truckActions = document.getElementById('truckActions');
 
-            mouse.set(x, y);
-            raycaster.setFromCamera(mouse, camera);
+        const moneyEl = document.getElementById('money');
+        const deliveriesEl = document.getElementById('deliveries');
+        const cargoCountEl = document.getElementById('cargoCount');
+        const pendingOrdersEl = document.getElementById('pendingOrders');
+        const scoreEl = document.getElementById('score');
+        const pendingBadge = document.getElementById('pendingBadge');
+        const orderCounter = document.getElementById('orderCounter');
+        const timerDisplay = document.getElementById('timerDisplay');
 
-            const hits = raycaster.intersectObjects(scene.children, true);
-
-            for (let hit of hits) {
-                let obj = hit.object;
-                let box = findBox(obj);
-
-                if (box && !box.userData.placed) {
-                    controls.enabled = false;
-                    selected = box;
-                    dragging = true;
-
-                    const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-                    const pt = new THREE.Vector3();
-                    raycaster.ray.intersectPlane(plane, pt);
-
-                    if (pt) {
-                        offset.copy(selected.position).sub(pt);
-                    }
-
-                    selected.position.y = 0.6;
-                    document.getElementById('container').classList.add('dragging');
-
-                    // Resaltar
-                    box.children.forEach(c => {
-                        if (c.material) c.material.emissiveIntensity = 0.3;
-                    });
-
-                    showToast(`📦 ${box.userData.color}`);
-                    break;
+        // ============================================================
+        // MÉTODO
+        // ============================================================
+        function setMethod(method) {
+            state.method = method;
+            document.querySelectorAll('.method-btn').forEach(btn => {
+                btn.className = 'method-btn';
+                if (btn.dataset.method === method) {
+                    btn.classList.add(method === 'fifo' ? 'active-fifo' : 'active-lifo');
                 }
+            });
+
+            const color = method === 'fifo' ? '#38a169' : '#e53e3e';
+            const label = method === 'fifo' ? 'primero en entrar, primero en salir' : 'último en entrar, primero en salir';
+            methodIndicator.innerHTML =
+                `Método: <strong style="color:${color};">${method.toUpperCase()}</strong> (${label})`;
+
+            const methodLabel = method === 'fifo' ? 'FIFO - Primero en entrar, primero en salir' :
+                'LIFO - Último en entrar, primero en salir';
+            const methodColor = method === 'fifo' ? '#38a169' : '#e53e3e';
+            dispatchMethodLabel.innerHTML =
+                `Método: <strong style="color:${methodColor};">${methodLabel}</strong>`;
+
+            updateUI();
+            showToast(`📋 Método: ${method.toUpperCase()}`, '');
+        }
+
+        document.getElementById('btnFIFO').addEventListener('click', () => setMethod('fifo'));
+        document.getElementById('btnLIFO').addEventListener('click', () => setMethod('lifo'));
+
+        // ============================================================
+        // GENERAR ENCOMIENDA AUTOMÁTICA
+        // ============================================================
+        function generateAutoOrder() {
+            if (state.gameOver) return;
+
+            const available = CITIES.filter(c => c.id !== state.truckPosition);
+            if (available.length < 2) return;
+
+            const origin = available[Math.floor(Math.random() * available.length)];
+            let destination = available[Math.floor(Math.random() * available.length)];
+            while (destination.id === origin.id) {
+                destination = available[Math.floor(Math.random() * available.length)];
+            }
+
+            const value = 150 + Math.floor(Math.random() * 250);
+
+            state.orderCounter++;
+            state.ordersGenerated++;
+            state.orders.push({
+                id: state.orderCounter,
+                origin: origin.id,
+                destination: destination.id,
+                value: value,
+                status: 'pending'
+            });
+
+            state.pendingOrders = state.orders.filter(o => o.status !== 'delivered').length;
+
+            showToast(`📋 Nueva encomienda: ${origin.name} → ${destination.name} $${value}`, 'warning');
+            updateUI();
+        }
+
+        // ============================================================
+        // AUTO TIMER
+        // ============================================================
+        function startAutoTimer() {
+            if (state.autoInterval) {
+                clearInterval(state.autoInterval);
+            }
+
+            const intervalMs = state.autoSpeed * 1000;
+            state.autoInterval = setInterval(() => {
+                if (state.autoActive && !state.gameOver) {
+                    generateAutoOrder();
+                }
+            }, intervalMs);
+
+            timerDisplay.textContent = `${state.autoSpeed}s`;
+            document.getElementById('btnAutoToggle').textContent = '⏸️ Pausar';
+        }
+
+        function toggleAuto() {
+            state.autoActive = !state.autoActive;
+            document.getElementById('btnAutoToggle').textContent = state.autoActive ? '⏸️ Pausar' : '▶️ Reanudar';
+            showToast(state.autoActive ? '▶️ Encomiendas automáticas activadas' : '⏸️ Encomiendas automáticas pausadas',
+                'warning');
+            if (state.autoActive) {
+                startAutoTimer();
             }
         }
 
-        function onMove(e) {
-            const rect = renderer.domElement.getBoundingClientRect();
-            const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-            const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        // ============================================================
+        // HANDLE CITY CLICK (SOLO MOVERSE)
+        // ============================================================
+        function handleCityClick(cityId) {
+            const city = CITIES.find(c => c.id === cityId);
+            if (!city || state.gameOver) return;
 
-            mouse.set(x, y);
-
-            if (dragging && selected) {
-                raycaster.setFromCamera(mouse, camera);
-
-                const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-                const pt = new THREE.Vector3();
-                raycaster.ray.intersectPlane(plane, pt);
-
-                if (pt) {
-                    const newPos = pt.clone().add(offset);
-                    // Limitar movimiento
-                    newPos.x = Math.max(-5.5, Math.min(5.5, newPos.x));
-                    newPos.z = Math.max(-2, Math.min(2, newPos.z));
-                    newPos.y = 0.6;
-                    selected.position.copy(newPos);
-
-                    // Resaltar área B si está sobre ella
-                    const overB = newPos.x > 1.5 && newPos.x < 4.5 &&
-                        newPos.z > -1.5 && newPos.z < 1.5;
-
-                    groupB.children.forEach(c => {
-                        if (c.material) {
-                            c.material.opacity = overB ? 0.4 : 0.15;
-                        }
-                    });
-                }
+            if (state.truckPosition === cityId) {
+                showToast(`📍 Ya estás en ${city.name}`, '');
                 return;
             }
 
-            // Hover
-            raycaster.setFromCamera(mouse, camera);
-            const hits = raycaster.intersectObjects(scene.children, true);
+            const currentCityId = state.truckPosition;
+            const isConnected = CONNECTIONS.some(([a, b]) =>
+                (a === currentCityId && b === cityId) || (b === currentCityId && a === cityId)
+            );
 
-            let found = false;
-            for (let hit of hits) {
-                let box = findBox(hit.object);
-                if (box && !box.userData.placed) {
-                    document.getElementById('container').classList.add('pointer');
-                    found = true;
-                    break;
-                }
+            if (!isConnected) {
+                const currentName = getCityName(currentCityId);
+                const targetName = city.name;
+                showToast(`🚫 No hay ruta directa entre ${currentName} y ${targetName}`, 'error');
+                return;
             }
-            if (!found) document.getElementById('container').classList.remove('pointer');
-        }
 
-        function onUp(e) {
-            if (dragging && selected) {
-                const pos = selected.position;
-                const overB = pos.x > 1.5 && pos.x < 4.5 &&
-                    pos.z > -1.5 && pos.z < 1.5;
-
-                if (overB && !selected.userData.placed) {
-                    // Colocar en área B
-                    selected.userData.placed = true;
-                    placed++;
-                    updateUI();
-
-                    // Mover al grupo B
-                    if (selected.parent) {
-                        selected.parent.remove(selected);
-                    }
-                    groupB.add(selected);
-
-                    // Posicionar exactamente en el centro del área B
-                    const targetX = 0;
-                    const targetZ = selected.userData.color === 'roja' ? -0.5 : 0.5;
-                    selected.position.set(targetX, 0.3, targetZ);
-
-                    showToast(`✅ ${selected.userData.color}`);
-
-                    if (placed >= 2) {
-                        setTimeout(() => showToast('🎉 completo'), 400);
-                    }
-                } else if (!overB && !selected.userData.placed) {
-                    // Volver a posición original en área A
-                    selected.position.copy(selected.userData.origPos);
-                } else {
-                    selected.position.y = 0.3;
-                }
-
-                // Reset
-                selected.children.forEach(c => {
-                    if (c.material) c.material.emissiveIntensity = 0.05;
-                });
-
-                selected = null;
-                dragging = false;
-                controls.enabled = true;
-
-                document.getElementById('container').classList.remove('dragging');
-
-                // Reset área B
-                groupB.children.forEach(c => {
-                    if (c.material) c.material.opacity = 0.15;
-                });
-
-                updateUI();
+            const fuelCost = 50 + Math.floor(Math.random() * 40);
+            if (state.money < fuelCost) {
+                showToast(`⚠️ No tienes suficiente dinero ($${fuelCost})`, 'error');
+                return;
             }
+
+            state.money -= fuelCost;
+            state.truckPosition = cityId;
+            showToast(`🚛 Viajaste a ${city.name} ($${fuelCost})`, 'success');
+
+            updateUI();
         }
 
         // ============================================================
-        // UTILIDADES
+        // CARGAR ENCOMIENDA (DESDE MI CAMIÓN)
         // ============================================================
-        function findBox(obj) {
-            while (obj) {
-                if (obj.userData && obj.userData.isBox) return obj;
-                obj = obj.parent;
+        function loadOrder(orderId) {
+            if (state.gameOver) return;
+
+            const order = state.orders.find(o => o.id === orderId);
+            if (!order || order.status !== 'pending') return;
+
+            if (state.truckPosition !== order.origin) {
+                showToast(`⚠️ Debes estar en ${getCityName(order.origin)} para cargar esta encomienda`, 'error');
+                return;
             }
-            return null;
+
+            if (state.cargo.length >= MAX_CARGO) {
+                showToast(`🚛 Camión lleno (${MAX_CARGO}/${MAX_CARGO})`, 'error');
+                return;
+            }
+
+            state.cargo.push({
+                origin: order.origin,
+                destination: order.destination,
+                value: order.value,
+                orderId: order.id
+            });
+            order.status = 'loaded';
+            state.pendingOrders = state.orders.filter(o => o.status !== 'delivered').length;
+
+            showToast(`📦 Encomienda cargada → ${getCityName(order.destination)}`, 'success');
+            updateUI();
         }
 
+        // ============================================================
+        // ENTREGAR ENCOMIENDA (DESDE MI CAMIÓN)
+        // ============================================================
+        function deliverCargo() {
+            const cityId = state.truckPosition;
+
+            if (state.cargo.length === 0) {
+                showToast('ℹ️ No hay encomiendas en el camión', '');
+                return;
+            }
+
+            let cargoIndex;
+            if (state.method === 'fifo') {
+                cargoIndex = 0;
+            } else {
+                cargoIndex = state.cargo.length - 1;
+            }
+
+            const cargoToDeliver = state.cargo[cargoIndex];
+
+            if (cargoToDeliver.destination !== cityId) {
+                const destName = getCityName(cargoToDeliver.destination);
+                showToast(`⚠️ ${state.method.toUpperCase()}: La siguiente encomienda va a ${destName}`, 'error');
+                return;
+            }
+
+            const order = state.orders.find(o => o.id === cargoToDeliver.orderId);
+            if (order) order.status = 'delivered';
+
+            state.money += cargoToDeliver.value;
+            state.deliveries++;
+            state.score += 10;
+
+            state.cargo.splice(cargoIndex, 1);
+            state.pendingOrders = state.orders.filter(o => o.status !== 'delivered').length;
+
+            showToast(`✅ Encomienda entregada en ${getCityName(cityId)} ($${cargoToDeliver.value})`, 'success');
+
+            if (state.deliveries >= 20) {
+                state.gameOver = true;
+                showToast('🎉 ¡FELICITACIONES! 20 entregas completadas.', 'success');
+                if (state.autoInterval) {
+                    clearInterval(state.autoInterval);
+                }
+            }
+
+            updateUI();
+        }
+
+        // ============================================================
+        // GENERAR ENCOMIENDA MANUAL
+        // ============================================================
+        function generateOrder() {
+            if (state.gameOver) return;
+
+            const available = CITIES.filter(c => c.id !== state.truckPosition);
+            if (available.length < 2) return;
+
+            const origin = available[Math.floor(Math.random() * available.length)];
+            let destination = available[Math.floor(Math.random() * available.length)];
+            while (destination.id === origin.id) {
+                destination = available[Math.floor(Math.random() * available.length)];
+            }
+
+            const value = 150 + Math.floor(Math.random() * 250);
+
+            state.orderCounter++;
+            state.ordersGenerated++;
+            state.orders.push({
+                id: state.orderCounter,
+                origin: origin.id,
+                destination: destination.id,
+                value: value,
+                status: 'pending'
+            });
+
+            state.pendingOrders = state.orders.filter(o => o.status !== 'delivered').length;
+            showToast(`📋 Nueva encomienda manual: ${origin.name} → ${destination.name} $${value}`, '');
+            updateUI();
+        }
+
+        // ============================================================
+        // MOVER (DADO)
+        // ============================================================
+        function moveTruck() {
+            if (state.gameOver) return;
+
+            const currentIndex = CITIES.findIndex(c => c.id === state.truckPosition);
+            const dice = Math.floor(Math.random() * 3) + 1;
+            const newIndex = Math.min(currentIndex + dice, CITIES.length - 1);
+
+            const fuelCost = 50 + dice * 25;
+            if (state.money < fuelCost) {
+                showToast(`⚠️ No tienes suficiente dinero ($${fuelCost})`, 'error');
+                return;
+            }
+
+            state.money -= fuelCost;
+            state.truckPosition = CITIES[newIndex].id;
+
+            showToast(`🎲 Avanzaste ${dice} ciudades → ${CITIES[newIndex].name} ($${fuelCost})`, 'success');
+
+            updateUI();
+        }
+
+        // ============================================================
+        // RENDER ACCIONES DE MI CAMIÓN
+        // ============================================================
+        function renderTruckActions() {
+            const cityName = getCityName(state.truckPosition);
+            const cityId = state.truckPosition;
+
+            // Encomiendas pendientes en esta ciudad (origen)
+            const ordersHere = state.orders.filter(o =>
+                o.origin === cityId && o.status === 'pending'
+            );
+
+            // Encomiendas para entregar en esta ciudad (destino)
+            const toDeliver = state.cargo.filter(c => c.destination === cityId);
+
+            const totalPending = state.orders.filter(o => o.status === 'pending').length;
+
+            let html = `
+                        <div style="font-size:12px;color:#4a5568;margin-bottom:6px;font-weight:600;">
+                            📍 ${cityName} ${totalPending > 0 ? `<span style="color:#dd6b20;font-weight:400;">(${totalPending} disponibles)</span>` : ''}
+                        </div>
+                    `;
+
+            // SECCIÓN: CARGAR
+            html += `<div class="action-section">`;
+            if (ordersHere.length > 0) {
+                html += `<div class="section-title"><span class="icon">📦</span>Para cargar:</div>`;
+                ordersHere.forEach(order => {
+                    const canLoad = state.cargo.length < MAX_CARGO;
+                    html += `
+                                <div class="order-row">
+                                    <span>→ <span class="dest">${getCityName(order.destination)}</span></span>
+                                    <span class="value">$${order.value}</span>
+                                    <button class="btn-load" onclick="loadOrder(${order.id})" 
+                                        ${!canLoad ? 'disabled' : ''}>
+                                        ${canLoad ? '📦 Cargar' : '🚛 Lleno'}
+                                    </button>
+                                </div>
+                            `;
+                });
+            } else {
+                html += `
+                            <div class="empty-message">📭 No hay encomiendas para cargar aquí</div>
+                        `;
+            }
+            html += `</div>`;
+
+            // SECCIÓN: ENTREGAR
+            html += `<div class="action-section">`;
+            if (toDeliver.length > 0) {
+                html += `<div class="section-title"><span class="icon">✅</span>Para entregar:</div>`;
+                toDeliver.forEach(cargo => {
+                    const isNext = state.method === 'fifo' ?
+                        state.cargo[0] === cargo :
+                        state.cargo[state.cargo.length - 1] === cargo;
+                    html += `
+                                <div class="order-row deliver-row">
+                                    <span>📦 <span class="dest">${getCityName(cargo.origin)} → ${getCityName(cargo.destination)}</span></span>
+                                    <span class="value">$${cargo.value}</span>
+                                    ${isNext ? `<span style="font-size:8px;background:#c6f6d5;color:#276749;padding:1px 8px;border-radius:10px;font-weight:600;">⬅️ PRÓXIMA</span>` : ''}
+                                </div>
+                            `;
+                });
+                html += `
+                            <button class="btn-deliver" onclick="deliverCargo()" ${state.cargo.length === 0 ? 'disabled' : ''}>
+                                📦 Entregar ${state.method === 'fifo' ? '(FIFO)' : '(LIFO)'}
+                            </button>
+                        `;
+            } else {
+                html += `
+                            <div class="empty-message">📭 No hay encomiendas para entregar aquí</div>
+                        `;
+            }
+            html += `</div>`;
+
+            // Espacio disponible
+            html += `
+                        <div class="space-info">
+                            <span>🚛 Espacio: ${state.cargo.length}/${MAX_CARGO}</span>
+                            <span>💰 Dinero: $${state.money}</span>
+                        </div>
+                    `;
+
+            truckActions.innerHTML = html;
+        }
+
+        // ============================================================
+        // RENDER GUÍA DE DESPACHO
+        // ============================================================
+        function renderDispatchGuide() {
+            if (state.cargo.length === 0) {
+                dispatchList.innerHTML = `
+                            <div class="dispatch-empty">🚛 Sin encomiendas en el camión</div>
+                        `;
+                return;
+            }
+
+            let html = '';
+            const method = state.method;
+            const cargoCopy = [...state.cargo];
+
+            const orderedCargo = method === 'fifo' ?
+                cargoCopy :
+                [...cargoCopy].reverse();
+
+            orderedCargo.forEach((item, index) => {
+                const isNext = index === 0;
+                const orderNum = method === 'fifo' ? index + 1 : cargoCopy.length - index;
+
+                let statusClass = '';
+                let statusText = '';
+                let itemClass = '';
+
+                if (isNext) {
+                    if (method === 'fifo') {
+                        statusClass = 'next';
+                        statusText = '⬅️ PRÓXIMA';
+                        itemClass = 'next';
+                    } else {
+                        statusClass = 'next-lifo';
+                        statusText = '⬅️ PRÓXIMA';
+                        itemClass = 'next-lifo';
+                    }
+                }
+
+                html += `
+                            <div class="dispatch-item ${itemClass}">
+                                <span class="order-num">#${orderNum}</span>
+                                <div class="cargo-info">
+                                    <span class="origin">${getCityName(item.origin)}</span>
+                                    <span class="arrow">→</span>
+                                    <span class="dest">${getCityName(item.destination)}</span>
+                                </div>
+                                ${statusText ? `<span class="status-badge ${statusClass}">${statusText}</span>` : ''}
+                            </div>
+                        `;
+            });
+
+            dispatchList.innerHTML = html;
+        }
+
+        // ============================================================
+        // RENDER MAPA SVG
+        // ============================================================
+        function renderMap() {
+            CITIES.forEach(city => {
+                const badge = document.getElementById(`badge-${city.id}`);
+                if (badge) badge.textContent = '';
+                const cityDot = document.querySelector(`.city-dot[data-city="${city.id}"] circle`);
+                if (cityDot) {
+                    cityDot.setAttribute('fill', '#f7fafc');
+                    cityDot.setAttribute('stroke', '#cbd5e0');
+                    cityDot.setAttribute('stroke-width', '2');
+                }
+            });
+
+            document.querySelectorAll('.truck-icon').forEach(el => el.textContent = '');
+
+            const truckCity = document.getElementById(`truck-${state.truckPosition}`);
+            if (truckCity) truckCity.textContent = '🚛';
+
+            const currentCity = document.querySelector(`.city-dot[data-city="${state.truckPosition}"] circle`);
+            if (currentCity) {
+                currentCity.setAttribute('fill', '#ebf8ff');
+                currentCity.setAttribute('stroke', '#2b6cb0');
+                currentCity.setAttribute('stroke-width', '3');
+            }
+
+            state.orders.filter(o => o.status === 'pending').forEach(order => {
+                const badge = document.getElementById(`badge-${order.origin}`);
+                if (badge) {
+                    const count = state.orders.filter(o => o.origin === order.origin && o.status === 'pending').length;
+                    badge.textContent = `📦${count}`;
+                    const cityDot = document.querySelector(`.city-dot[data-city="${order.origin}"] circle`);
+                    if (cityDot) {
+                        cityDot.setAttribute('fill', '#fffbeb');
+                        cityDot.setAttribute('stroke', '#d69e2e');
+                        cityDot.setAttribute('stroke-width', '2.5');
+                    }
+                }
+            });
+
+            state.cargo.forEach(cargo => {
+                const badge = document.getElementById(`badge-${cargo.destination}`);
+                if (badge) {
+                    const count = state.cargo.filter(c => c.destination === cargo.destination).length;
+                    badge.textContent = `🎯${count}`;
+                    const cityDot = document.querySelector(`.city-dot[data-city="${cargo.destination}"] circle`);
+                    if (cityDot) {
+                        cityDot.setAttribute('fill', '#fff5f5');
+                        cityDot.setAttribute('stroke', '#e53e3e');
+                        cityDot.setAttribute('stroke-width', '2.5');
+                    }
+                }
+            });
+
+            state.cargo.forEach(cargo => {
+                const badge = document.getElementById(`badge-${cargo.origin}`);
+                if (badge) {
+                    const count = state.cargo.filter(c => c.origin === cargo.origin).length;
+                    if (!badge.textContent.includes('📦')) {
+                        badge.textContent = `📤${count}`;
+                    }
+                    const cityDot = document.querySelector(`.city-dot[data-city="${cargo.origin}"] circle`);
+                    if (cityDot) {
+                        cityDot.setAttribute('fill', '#f0fff4');
+                        cityDot.setAttribute('stroke', '#38a169');
+                        cityDot.setAttribute('stroke-width', '2.5');
+                    }
+                }
+            });
+        }
+
+        // ============================================================
+        // LIMPIAR ÓRDENES
+        // ============================================================
+        function clearOrders() {
+            if (!confirm('¿Eliminar todas las encomiendas pendientes?')) return;
+
+            state.orders = state.orders.filter(o => o.status === 'delivered');
+            state.pendingOrders = state.orders.filter(o => o.status !== 'delivered').length;
+            showToast('🗑️ Encomiendas pendientes eliminadas', '');
+            updateUI();
+        }
+
+        // ============================================================
+        // UTILITY
+        // ============================================================
+        function getCityName(id) {
+            const city = CITIES.find(c => c.id === id);
+            return city ? city.name : id;
+        }
+
+        // Exponer funciones globalmente
+        window.loadOrder = loadOrder;
+        window.deliverCargo = deliverCargo;
+
+        // ============================================================
+        // UPDATE UI
+        // ============================================================
         function updateUI() {
-            document.getElementById('placed').textContent = placed;
+            moneyEl.textContent = state.money;
+            deliveriesEl.textContent = state.deliveries;
+            cargoCountEl.textContent = state.cargo.length;
+            pendingOrdersEl.textContent = state.pendingOrders;
+            scoreEl.textContent = state.score;
+            orderCounter.textContent = `📋 ${state.ordersGenerated} generadas`;
+            pendingBadge.textContent = state.pendingOrders > 0 ? `(${state.pendingOrders} pendientes)` : '';
+
+            const cityName = getCityName(state.truckPosition);
+            truckLocation.textContent = `📍 En: ${cityName}`;
+            truckCargo.textContent = `Encomiendas: ${state.cargo.length}/${MAX_CARGO}`;
+
+            const slots = truckCapacity.querySelectorAll('.slot');
+            slots.forEach((slot, index) => {
+                slot.className = 'slot';
+                if (index < state.cargo.length) {
+                    slot.classList.add('filled');
+                    slot.textContent = index + 1;
+                    if (state.method === 'fifo' && index === 0) {
+                        slot.classList.add('fifo-next');
+                    } else if (state.method === 'lifo' && index === state.cargo.length - 1) {
+                        slot.classList.add('lifo-next');
+                    }
+                } else {
+                    slot.textContent = '';
+                }
+            });
+
+            renderDispatchGuide();
+            renderTruckActions();
+
+            // Todas las órdenes
+            if (state.orders.filter(o => o.status !== 'delivered').length === 0) {
+                ordersList.innerHTML =
+                    `<div style="color:#a0aec0;text-align:center;padding:15px;font-size:13px;">Sin encomiendas activas</div>`;
+            } else {
+                ordersList.innerHTML = '';
+                const sorted = [...state.orders].filter(o => o.status !== 'delivered').reverse();
+                sorted.forEach(order => {
+                    const div = document.createElement('div');
+                    div.className = 'order-item';
+
+                    const statusMap = {
+                        pending: '⏳ Pendiente',
+                        loaded: '📦 Cargada',
+                        delivered: '✅ Entregada'
+                    };
+                    const statusClass = {
+                        pending: 'pending',
+                        loaded: 'loaded',
+                        delivered: 'delivered'
+                    };
+
+                    div.innerHTML = `
+                                <div>
+                                    <span class="from">${getCityName(order.origin)}</span>
+                                    → <span class="to">${getCityName(order.destination)}</span>
+                                    <span style="color:#d69e2e;font-weight:600;margin-left:8px;">$${order.value}</span>
+                                </div>
+                                <div>
+                                    <span class="status ${statusClass[order.status]}">${statusMap[order.status]}</span>
+                                </div>
+                            `;
+                    ordersList.appendChild(div);
+                });
+            }
+
+            renderMap();
+
+            document.getElementById('btnMove').disabled = state.gameOver || state.money < 50;
         }
 
-        function showToast(msg) {
+        // ============================================================
+        // TOAST
+        // ============================================================
+        function showToast(message, type = '') {
             const old = document.querySelector('.toast');
             if (old) old.remove();
 
-            const t = document.createElement('div');
-            t.className = 'toast';
-            t.textContent = msg;
-            document.body.appendChild(t);
+            if (!message) return;
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
 
             setTimeout(() => {
-                t.style.opacity = '0';
-                t.style.transition = '0.3s';
-                setTimeout(() => t.remove(), 300);
-            }, 1000);
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
         }
 
         // ============================================================
         // REINICIAR
         // ============================================================
-        function reset() {
-            placed = 0;
+        function resetGame() {
+            if (!confirm('¿Reiniciar partida?')) return;
+
+            if (state.autoInterval) {
+                clearInterval(state.autoInterval);
+            }
+
+            state.money = 5000;
+            state.deliveries = 0;
+            state.score = 0;
+            state.truckPosition = 'santiago';
+            state.cargo = [];
+            state.orders = [];
+            state.orderCounter = 0;
+            state.gameOver = false;
+            state.ordersGenerated = 0;
+            state.pendingOrders = 0;
+
+            for (let i = 0; i < 3; i++) generateAutoOrder();
+            if (state.autoActive) {
+                startAutoTimer();
+            }
             updateUI();
-
-            [box1, box2].forEach(box => {
-                box.userData.placed = false;
-                if (box.parent) box.parent.remove(box);
-                groupA.add(box);
-                box.position.copy(box.userData.origPos);
-                box.rotation.set(0, 0, 0);
-            });
-
-            showToast('↺');
+            showToast('🔄 Partida reiniciada', '');
         }
 
         // ============================================================
-        // ANIMACIÓN
+        // EVENTOS
         // ============================================================
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
-        }
+        document.getElementById('btnMove').addEventListener('click', moveTruck);
+        document.getElementById('btnNewOrder').addEventListener('click', generateOrder);
+        document.getElementById('btnAutoToggle').addEventListener('click', toggleAuto);
+        document.getElementById('btnReset').addEventListener('click', resetGame);
+        document.getElementById('btnClearOrders').addEventListener('click', clearOrders);
 
-        // ============================================================
-        // RESIZE
-        // ============================================================
-        function onResize() {
-            const c = document.getElementById('container');
-            camera.aspect = c.clientWidth / c.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(c.clientWidth, c.clientHeight);
-        }
+        const speedSlider = document.getElementById('speedSlider');
+        const sliderValue = document.getElementById('sliderValue');
+
+        speedSlider.addEventListener('input', function() {
+            state.autoSpeed = parseInt(this.value);
+            sliderValue.textContent = `${state.autoSpeed}s`;
+            if (state.autoActive) {
+                startAutoTimer();
+            }
+            timerDisplay.textContent = `${state.autoSpeed}s`;
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'm' || e.key === 'M') moveTruck();
+            if (e.key === 'd' || e.key === 'D') deliverCargo();
+            if (e.key === 'n' || e.key === 'N') generateOrder();
+            if (e.key === 'r' || e.key === 'R') resetGame();
+            if (e.key === ' ') {
+                e.preventDefault();
+                toggleAuto();
+            }
+        });
 
         // ============================================================
         // INICIO
         // ============================================================
-        init();
+        for (let i = 0; i < 3; i++) generateAutoOrder();
+        startAutoTimer();
+        updateUI();
 
-        document.getElementById('reset').addEventListener('click', reset);
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'r') reset();
-        });
+        console.log('🚛 Carga Máxima - Control Total');
+        console.log('📍 Cargar y Entregar desde "Mi Camión"');
+        console.log('📦 Cargar y Entregar son acciones separadas');
+        console.log('📋 FIFO: primera en entrar, primera en salir');
+        console.log('📋 LIFO: última en entrar, primera en salir');
+        console.log('⌨️  M: Mover | D: Entregar | N: Orden | Space: Pausar | R: Reiniciar');
     </script>
 
 </body>
