@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🚛 Carga Máxima - Carreteras Reales</title>
+    <title>🚛 Carga Máxima - Control Total</title>
 
     <style>
         * {
@@ -84,21 +84,11 @@
             min-width: 20px;
             text-align: center;
         }
-        .player-info .item .num.gold {
-            color: #d69e2e;
-        }
-        .player-info .item .num.green {
-            color: #38a169;
-        }
-        .player-info .item .num.blue {
-            color: #2b6cb0;
-        }
-        .player-info .item .num.pink {
-            color: #e53e3e;
-        }
-        .player-info .item .num.orange {
-            color: #dd6b20;
-        }
+        .player-info .item .num.gold { color: #d69e2e; }
+        .player-info .item .num.green { color: #38a169; }
+        .player-info .item .num.blue { color: #2b6cb0; }
+        .player-info .item .num.pink { color: #e53e3e; }
+        .player-info .item .num.orange { color: #dd6b20; }
 
         .method-selector {
             display: flex;
@@ -119,17 +109,9 @@
             background: transparent;
             color: #718096;
         }
-        .method-btn:hover {
-            background: #e2e8f0;
-        }
-        .method-btn.active-fifo {
-            background: #38a169;
-            color: white;
-        }
-        .method-btn.active-lifo {
-            background: #e53e3e;
-            color: white;
-        }
+        .method-btn:hover { background: #e2e8f0; }
+        .method-btn.active-fifo { background: #38a169; color: white; }
+        .method-btn.active-lifo { background: #e53e3e; color: white; }
 
         .main-grid {
             display: grid;
@@ -187,6 +169,105 @@
             min-height: 650px;
         }
 
+        /* ===== CAMIÓN EN MOVIMIENTO ===== */
+        .truck-moving {
+            position: absolute;
+            font-size: 26px;
+            z-index: 20;
+            pointer-events: none;
+            filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
+            transform: translate(-50%, -50%);
+            transition: none;
+        }
+
+        .truck-moving .shadow {
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 4px;
+            background: rgba(0,0,0,0.15);
+            border-radius: 50%;
+            transition: none;
+        }
+
+        /* ===== CARRETERAS ===== */
+        .road-group {
+            transition: all 0.3s;
+        }
+
+        .road-border {
+            stroke: #4a5568;
+            stroke-width: 2.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .road-border.main { stroke-width: 3.5; }
+        .road-border.secondary { stroke-width: 2.5; }
+
+        .road-center {
+            stroke: #a0aec0;
+            stroke-width: 1.2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 6, 8;
+        }
+
+        .road-center.main { stroke-dasharray: 8, 10; stroke-width: 1.5; }
+        .road-center.secondary { stroke-dasharray: 5, 7; stroke-width: 1; }
+
+        /* ===== PROGRESO DE VIAJE ===== */
+        .travel-progress {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            padding: 8px 12px;
+            display: none;
+            z-index: 15;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .travel-progress.active {
+            display: block;
+        }
+
+        .travel-progress .info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .travel-progress .info .highlight {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .travel-progress .bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .travel-progress .bar .fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ff6b6b);
+            width: 0%;
+            border-radius: 2px;
+            transition: width 0.05s linear;
+        }
+
         .city-dot {
             cursor: pointer;
             transition: all 0.3s;
@@ -211,9 +292,7 @@
             text-shadow: 0 0 4px white, 0 0 4px white;
         }
 
-        .city-dot .city-label.small {
-            font-size: 9px;
-        }
+        .city-dot .city-label.small { font-size: 9px; }
 
         .city-dot .truck-icon {
             font-size: 18px;
@@ -230,59 +309,6 @@
             text-anchor: middle;
         }
 
-        /* ===== CARRETERAS REALISTAS ===== */
-        .road-group {
-            transition: all 0.3s;
-        }
-
-        .road-group:hover .road-border {
-            stroke: #dd6b20;
-            stroke-width: 4;
-        }
-
-        .road-group:hover .road-center {
-            stroke: #dd6b20;
-            stroke-width: 1.5;
-        }
-
-        /* Líneas exteriores (bordes de la carretera) */
-        .road-border {
-            stroke: #4a5568;
-            stroke-width: 2.5;
-            fill: none;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        .road-border.main {
-            stroke-width: 3.5;
-        }
-
-        .road-border.secondary {
-            stroke-width: 2.5;
-        }
-
-        /* Línea central (separador de carriles) */
-        .road-center {
-            stroke: #a0aec0;
-            stroke-width: 1.2;
-            fill: none;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            stroke-dasharray: 6, 8;
-        }
-
-        .road-center.main {
-            stroke-dasharray: 8, 10;
-            stroke-width: 1.5;
-        }
-
-        .road-center.secondary {
-            stroke-dasharray: 5, 7;
-            stroke-width: 1;
-        }
-
-        /* ===== LEYENDA ===== */
         .legend {
             display: flex;
             gap: 15px;
@@ -334,12 +360,8 @@
             background: #4a5568;
         }
 
-        .legend .road-sample .top-line.main {
-            height: 3px;
-        }
-        .legend .road-sample .bottom-line.main {
-            height: 3px;
-        }
+        .legend .road-sample .top-line.main { height: 3px; }
+        .legend .road-sample .bottom-line.main { height: 3px; }
         .legend .road-sample .center-line.main {
             background-image: repeating-linear-gradient(90deg, #a0aec0, #a0aec0 6px, transparent 6px, transparent 10px);
             height: 1.5px;
@@ -351,18 +373,9 @@
             border-radius: 50%;
             border: 2px solid #cbd5e0;
         }
-        .legend .dot.has-cargo {
-            background: #fffbeb;
-            border-color: #d69e2e;
-        }
-        .legend .dot.origin {
-            background: #f0fff4;
-            border-color: #38a169;
-        }
-        .legend .dot.destination {
-            background: #fff5f5;
-            border-color: #e53e3e;
-        }
+        .legend .dot.has-cargo { background: #fffbeb; border-color: #d69e2e; }
+        .legend .dot.origin { background: #f0fff4; border-color: #38a169; }
+        .legend .dot.destination { background: #fff5f5; border-color: #e53e3e; }
 
         .panel {
             display: flex;
@@ -389,7 +402,6 @@
             gap: 6px;
         }
 
-        /* ===== CAMIÓN CON ACCIONES ===== */
         .truck-status {
             display: flex;
             align-items: center;
@@ -402,26 +414,11 @@
             flex-wrap: wrap;
         }
 
-        .truck-status .icon {
-            font-size: 22px;
-        }
-        .truck-status .info {
-            flex: 1;
-        }
-        .truck-status .info .location {
-            font-size: 13px;
-            font-weight: 600;
-            color: #2d3748;
-        }
-        .truck-status .info .cargo {
-            font-size: 11px;
-            color: #718096;
-        }
-        .truck-status .info .method-indicator {
-            font-size: 10px;
-            color: #718096;
-            margin-top: 2px;
-        }
+        .truck-status .icon { font-size: 22px; }
+        .truck-status .info { flex: 1; }
+        .truck-status .info .location { font-size: 13px; font-weight: 600; color: #2d3748; }
+        .truck-status .info .cargo { font-size: 11px; color: #718096; }
+        .truck-status .info .method-indicator { font-size: 10px; color: #718096; margin-top: 2px; }
 
         .truck-status .capacity {
             display: flex;
@@ -463,26 +460,15 @@
         }
 
         @keyframes pulse-green {
-            0%,
-            100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.2);
-            }
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
         }
 
         @keyframes pulse-red {
-            0%,
-            100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.2);
-            }
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
         }
 
-        /* ===== ACCIONES DENTRO DE MI CAMIÓN ===== */
         .truck-actions {
             background: #ffffff;
             border-radius: 6px;
@@ -491,24 +477,15 @@
             margin-top: 8px;
         }
 
-        .truck-actions .action-section {
-            margin-bottom: 8px;
-        }
-
-        .truck-actions .action-section:last-child {
-            margin-bottom: 0;
-        }
-
+        .truck-actions .action-section { margin-bottom: 8px; }
+        .truck-actions .action-section:last-child { margin-bottom: 0; }
         .truck-actions .section-title {
             font-size: 12px;
             font-weight: 600;
             color: #4a5568;
             margin-bottom: 4px;
         }
-
-        .truck-actions .section-title .icon {
-            margin-right: 4px;
-        }
+        .truck-actions .section-title .icon { margin-right: 4px; }
 
         .truck-actions .order-row {
             display: flex;
@@ -522,15 +499,8 @@
             border-left: 3px solid #d69e2e;
         }
 
-        .truck-actions .order-row .dest {
-            font-weight: 600;
-            color: #2d3748;
-        }
-
-        .truck-actions .order-row .value {
-            color: #d69e2e;
-            font-weight: 600;
-        }
+        .truck-actions .order-row .dest { font-weight: 600; color: #2d3748; }
+        .truck-actions .order-row .value { color: #d69e2e; font-weight: 600; }
 
         .truck-actions .order-row .btn-load {
             background: #dd6b20;
@@ -544,18 +514,9 @@
             transition: 0.2s;
         }
 
-        .truck-actions .order-row .btn-load:hover:not(:disabled) {
-            background: #c05621;
-        }
-
-        .truck-actions .order-row .btn-load:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        .truck-actions .order-row.deliver-row {
-            border-left-color: #e53e3e;
-        }
+        .truck-actions .order-row .btn-load:hover:not(:disabled) { background: #c05621; }
+        .truck-actions .order-row .btn-load:disabled { opacity: 0.3; cursor: not-allowed; }
+        .truck-actions .order-row.deliver-row { border-left-color: #e53e3e; }
 
         .truck-actions .btn-deliver {
             width: 100%;
@@ -571,20 +532,9 @@
             margin-top: 4px;
         }
 
-        .truck-actions .btn-deliver:hover:not(:disabled) {
-            background: #276749;
-        }
-
-        .truck-actions .btn-deliver:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        .truck-actions .empty-message {
-            color: #a0aec0;
-            font-size: 12px;
-            padding: 4px 0;
-        }
+        .truck-actions .btn-deliver:hover:not(:disabled) { background: #276749; }
+        .truck-actions .btn-deliver:disabled { opacity: 0.3; cursor: not-allowed; }
+        .truck-actions .empty-message { color: #a0aec0; font-size: 12px; padding: 4px 0; }
 
         .truck-actions .space-info {
             font-size: 10px;
@@ -631,9 +581,7 @@
             font-size: 11px;
             transition: all 0.2s;
         }
-        .dispatch-item:last-child {
-            border-bottom: none;
-        }
+        .dispatch-item:last-child { border-bottom: none; }
 
         .dispatch-item .order-num {
             width: 24px;
@@ -654,15 +602,8 @@
             color: #2d3748;
             font-size: 11px;
         }
-
-        .dispatch-item .cargo-info .arrow {
-            color: #cbd5e0;
-        }
-
-        .dispatch-item .cargo-info .origin {
-            color: #718096;
-            font-size: 10px;
-        }
+        .dispatch-item .cargo-info .arrow { color: #cbd5e0; }
+        .dispatch-item .cargo-info .origin { color: #718096; font-size: 10px; }
 
         .dispatch-item .status-badge {
             font-size: 8px;
@@ -684,20 +625,9 @@
             animation: pulse-red 1s infinite;
         }
 
-        .dispatch-item.next {
-            background: #f0fff4;
-            border-left: 3px solid #38a169;
-        }
-        .dispatch-item.next-lifo {
-            background: #fff5f5;
-            border-left: 3px solid #e53e3e;
-        }
-        .dispatch-empty {
-            padding: 15px;
-            text-align: center;
-            color: #a0aec0;
-            font-size: 12px;
-        }
+        .dispatch-item.next { background: #f0fff4; border-left: 3px solid #38a169; }
+        .dispatch-item.next-lifo { background: #fff5f5; border-left: 3px solid #e53e3e; }
+        .dispatch-empty { padding: 15px; text-align: center; color: #a0aec0; font-size: 12px; }
 
         .btn-group {
             display: flex;
@@ -719,41 +649,18 @@
             min-width: 70px;
         }
 
-        .btn-primary {
-            background: #2b6cb0;
-            color: white;
-        }
-        .btn-primary:hover {
-            background: #2c5282;
-        }
-        .btn-primary:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
+        .btn-primary { background: #2b6cb0; color: white; }
+        .btn-primary:hover { background: #2c5282; }
+        .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        .btn-secondary {
-            background: #e2e8f0;
-            color: #4a5568;
-        }
-        .btn-secondary:hover {
-            background: #cbd5e0;
-        }
+        .btn-secondary { background: #e2e8f0; color: #4a5568; }
+        .btn-secondary:hover { background: #cbd5e0; }
 
-        .btn-danger {
-            background: #e53e3e;
-            color: white;
-        }
-        .btn-danger:hover {
-            background: #c53030;
-        }
+        .btn-danger { background: #e53e3e; color: white; }
+        .btn-danger:hover { background: #c53030; }
 
-        .btn-auto {
-            background: #805ad5;
-            color: white;
-        }
-        .btn-auto:hover {
-            background: #6b46c1;
-        }
+        .btn-auto { background: #805ad5; color: white; }
+        .btn-auto:hover { background: #6b46c1; }
 
         .orders-list {
             display: flex;
@@ -776,18 +683,9 @@
             border-left-width: 3px;
         }
 
-        .orders-list .order-item .from {
-            color: #38a169;
-            font-weight: 600;
-        }
-        .orders-list .order-item .to {
-            color: #e53e3e;
-            font-weight: 600;
-        }
-        .orders-list .order-item .value {
-            color: #d69e2e;
-            font-weight: 600;
-        }
+        .orders-list .order-item .from { color: #38a169; font-weight: 600; }
+        .orders-list .order-item .to { color: #e53e3e; font-weight: 600; }
+        .orders-list .order-item .value { color: #d69e2e; font-weight: 600; }
 
         .orders-list .order-item .status {
             font-size: 8px;
@@ -796,18 +694,9 @@
             font-weight: 600;
         }
 
-        .orders-list .order-item .status.pending {
-            background: #fefcbf;
-            color: #975a16;
-        }
-        .orders-list .order-item .status.loaded {
-            background: #bee3f8;
-            color: #2a69ac;
-        }
-        .orders-list .order-item .status.delivered {
-            background: #c6f6d5;
-            color: #276749;
-        }
+        .orders-list .order-item .status.pending { background: #fefcbf; color: #975a16; }
+        .orders-list .order-item .status.loaded { background: #bee3f8; color: #2a69ac; }
+        .orders-list .order-item .status.delivered { background: #c6f6d5; color: #276749; }
 
         .auto-controls {
             display: flex;
@@ -819,27 +708,10 @@
             flex-wrap: wrap;
         }
 
-        .auto-controls .label {
-            font-size: 11px;
-            color: #718096;
-        }
-        .auto-controls .timer-display {
-            font-size: 14px;
-            font-weight: 700;
-            color: #805ad5;
-            min-width: 60px;
-            text-align: center;
-        }
-        .auto-controls .slider {
-            flex: 1;
-            min-width: 100px;
-            accent-color: #805ad5;
-        }
-        .auto-controls .slider-value {
-            font-size: 11px;
-            color: #718096;
-            min-width: 40px;
-        }
+        .auto-controls .label { font-size: 11px; color: #718096; }
+        .auto-controls .timer-display { font-size: 14px; font-weight: 700; color: #805ad5; min-width: 60px; text-align: center; }
+        .auto-controls .slider { flex: 1; min-width: 100px; accent-color: #805ad5; }
+        .auto-controls .slider-value { font-size: 11px; color: #718096; min-width: 40px; }
 
         .toast {
             position: fixed;
@@ -858,112 +730,41 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
-        .toast.success {
-            border-left: 4px solid #38a169;
-        }
-        .toast.error {
-            border-left: 4px solid #e53e3e;
-        }
-        .toast.warning {
-            border-left: 4px solid #dd6b20;
-        }
+        .toast.success { border-left: 4px solid #38a169; }
+        .toast.error { border-left: 4px solid #e53e3e; }
+        .toast.warning { border-left: 4px solid #dd6b20; }
 
         @keyframes toast-in {
-            from {
-                opacity: 0;
-                transform: translateX(-50%) translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
+            from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
 
-        .orders-list::-webkit-scrollbar {
-            width: 4px;
-        }
-        .orders-list::-webkit-scrollbar-track {
-            background: #f7fafc;
-            border-radius: 2px;
-        }
-        .orders-list::-webkit-scrollbar-thumb {
-            background: #cbd5e0;
-            border-radius: 2px;
-        }
+        .orders-list::-webkit-scrollbar { width: 4px; }
+        .orders-list::-webkit-scrollbar-track { background: #f7fafc; border-radius: 2px; }
+        .orders-list::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 2px; }
 
         @media (max-width: 600px) {
-            .container {
-                padding: 10px;
-            }
-            .header h1 {
-                font-size: 18px;
-            }
-            .panel {
-                position: static;
-            }
-            .panel-card {
-                padding: 10px;
-            }
-            .btn {
-                font-size: 9px;
-                padding: 5px 10px;
-                min-width: 50px;
-            }
-            .player-info {
-                gap: 6px;
-                padding: 4px 8px;
-            }
-            .player-info .item {
-                font-size: 10px;
-            }
-            .player-info .item .num {
-                font-size: 13px;
-                min-width: 16px;
-            }
-            .method-selector {
-                gap: 3px;
-            }
-            .method-btn {
-                font-size: 9px;
-                padding: 2px 8px;
-            }
-            .dispatch-item {
-                font-size: 9px;
-                padding: 4px 8px;
-                flex-wrap: wrap;
-            }
-            .dispatch-item .order-num {
-                width: 18px;
-                font-size: 8px;
-            }
-            .truck-status {
-                flex-wrap: wrap;
-            }
-            .auto-controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .auto-controls .slider {
-                width: 100%;
-            }
-            .city-dot .city-label {
-                font-size: 9px;
-            }
-            .city-dot .city-label.small {
-                font-size: 8px;
-            }
-            .legend {
-                font-size: 8px;
-                gap: 8px;
-            }
-            .truck-actions .order-row {
-                font-size: 10px;
-                flex-wrap: wrap;
-            }
-            .legend .road-sample {
-                width: 20px;
-                height: 12px;
-            }
+            .container { padding: 10px; }
+            .header h1 { font-size: 18px; }
+            .panel { position: static; }
+            .panel-card { padding: 10px; }
+            .btn { font-size: 9px; padding: 5px 10px; min-width: 50px; }
+            .player-info { gap: 6px; padding: 4px 8px; }
+            .player-info .item { font-size: 10px; }
+            .player-info .item .num { font-size: 13px; min-width: 16px; }
+            .method-selector { gap: 3px; }
+            .method-btn { font-size: 9px; padding: 2px 8px; }
+            .dispatch-item { font-size: 9px; padding: 4px 8px; flex-wrap: wrap; }
+            .dispatch-item .order-num { width: 18px; font-size: 8px; }
+            .truck-status { flex-wrap: wrap; }
+            .auto-controls { flex-direction: column; align-items: stretch; }
+            .auto-controls .slider { width: 100%; }
+            .city-dot .city-label { font-size: 9px; }
+            .city-dot .city-label.small { font-size: 8px; }
+            .legend { font-size: 8px; gap: 8px; }
+            .truck-actions .order-row { font-size: 10px; flex-wrap: wrap; }
+            .legend .road-sample { width: 20px; height: 12px; }
+            .truck-moving { font-size: 22px; }
         }
     </style>
 </head>
@@ -974,7 +775,7 @@
         <div class="header">
             <div>
                 <h1>🚛 Carga <span>Máxima</span></h1>
-                <span class="sub">Carreteras Reales</span>
+                <span class="sub">Control Total</span>
             </div>
             <div class="player-info">
                 <div class="item">💰 <span class="num gold" id="money">5000</span></div>
@@ -999,174 +800,154 @@
                     🗺️ Rutas de Chile
                     <span class="badge-auto">⚡ Generación Automática</span>
                 </h2>
-                <div class="map-container">
+                <div class="map-container" style="position:relative;" id="mapContainer">
                     <svg class="map-svg" viewBox="0 0 600 700" xmlns="http://www.w3.org/2000/svg" id="mapSvg">
-                        <!-- ===== CARRETERAS REALISTAS ===== -->
-
-                        <!-- Ruta 1: Arica → Iquique (Principal) -->
+                        <!-- CARRETERAS -->
                         <g class="road-group">
                             <path class="road-border main" d="M300,40 L160,120" />
                             <path class="road-center main" d="M300,40 L160,120" />
                         </g>
-
-                        <!-- Ruta 2: Iquique → Antofagasta (Principal) -->
                         <g class="road-group">
                             <path class="road-border main" d="M160,120 L300,180" />
                             <path class="road-center main" d="M160,120 L300,180" />
                         </g>
-
-                        <!-- Ruta 3: Antofagasta → Calama (Secundaria) -->
                         <g class="road-group">
                             <path class="road-border secondary" d="M300,180 L460,160" />
                             <path class="road-center secondary" d="M300,180 L460,160" />
                         </g>
-
-                        <!-- Ruta 4: Antofagasta → La Serena (Principal) -->
                         <g class="road-group">
                             <path class="road-border main" d="M300,180 L300,240" />
                             <path class="road-center main" d="M300,180 L300,240" />
                         </g>
-
-                        <!-- Ruta 5: La Serena → Santiago (Principal) -->
                         <g class="road-group">
                             <path class="road-border main" d="M300,240 L260,300" />
                             <path class="road-center main" d="M300,240 L260,300" />
                         </g>
-
-                        <!-- Ruta 6: Santiago → Valparaíso (Secundaria) -->
                         <g class="road-group">
                             <path class="road-border secondary" d="M260,300 L120,300" />
                             <path class="road-center secondary" d="M260,300 L120,300" />
                         </g>
-
-                        <!-- Ruta 7: Santiago → Rancagua (Secundaria) -->
                         <g class="road-group">
                             <path class="road-border secondary" d="M260,300 L400,320" />
                             <path class="road-center secondary" d="M260,300 L400,320" />
                         </g>
-
-                        <!-- Ruta 8: Rancagua → Los Ángeles (Principal) -->
                         <g class="road-group">
                             <path class="road-border main" d="M400,320 L350,400" />
                             <path class="road-center main" d="M400,320 L350,400" />
                         </g>
-
-                        <!-- Ruta 9: Los Ángeles → Concepción (Secundaria) -->
                         <g class="road-group">
                             <path class="road-border secondary" d="M350,400 L180,400" />
                             <path class="road-center secondary" d="M350,400 L180,400" />
                         </g>
-
-                        <!-- Ruta 10: Los Ángeles → Temuco (Principal) -->
                         <g class="road-group">
                             <path class="road-border main" d="M350,400 L280,440" />
                             <path class="road-center main" d="M350,400 L280,440" />
                         </g>
-
-                        <!-- Ruta 11: Temuco → Valdivia (Secundaria) -->
                         <g class="road-group">
                             <path class="road-border secondary" d="M280,440 L180,480" />
                             <path class="road-center secondary" d="M280,440 L180,480" />
                         </g>
-
-                        <!-- Ruta 12: Temuco → Puerto Montt (Principal) -->
                         <g class="road-group">
                             <path class="road-border main" d="M280,440 L280,520" />
                             <path class="road-center main" d="M280,440 L280,520" />
                         </g>
 
-                        <!-- ===== CIUDADES ===== -->
+                        <!-- CIUDADES -->
                         <g class="city-dot" data-city="arica" onclick="handleCityClick('arica')">
                             <circle cx="300" cy="40" r="14" fill="#ebf8ff" stroke="#2b6cb0" stroke-width="2.5"/>
                             <text x="300" y="62" class="city-label">Arica</text>
                             <text x="300" y="40" class="badge-text" id="badge-arica" fill="#d69e2e"></text>
-                            <text x="300" y="32" class="truck-icon" id="truck-arica"></text>
                         </g>
 
                         <g class="city-dot" data-city="iquique" onclick="handleCityClick('iquique')">
                             <circle cx="160" cy="120" r="14" fill="#f7fafc" stroke="#cbd5e0" stroke-width="2"/>
                             <text x="160" y="142" class="city-label">Iquique</text>
                             <text x="160" y="120" class="badge-text" id="badge-iquique" fill="#d69e2e"></text>
-                            <text x="160" y="112" class="truck-icon" id="truck-iquique"></text>
                         </g>
 
                         <g class="city-dot" data-city="calama" onclick="handleCityClick('calama')">
                             <circle cx="460" cy="160" r="14" fill="#f7fafc" stroke="#cbd5e0" stroke-width="2"/>
                             <text x="460" y="182" class="city-label">Calama</text>
                             <text x="460" y="160" class="badge-text" id="badge-calama" fill="#d69e2e"></text>
-                            <text x="460" y="152" class="truck-icon" id="truck-calama"></text>
                         </g>
 
                         <g class="city-dot" data-city="antofagasta" onclick="handleCityClick('antofagasta')">
                             <circle cx="300" cy="180" r="14" fill="#f7fafc" stroke="#cbd5e0" stroke-width="2"/>
                             <text x="300" y="202" class="city-label">Antofagasta</text>
                             <text x="300" y="180" class="badge-text" id="badge-antofagasta" fill="#d69e2e"></text>
-                            <text x="300" y="172" class="truck-icon" id="truck-antofagasta"></text>
                         </g>
 
                         <g class="city-dot" data-city="la_serena" onclick="handleCityClick('la_serena')">
                             <circle cx="300" cy="240" r="14" fill="#f7fafc" stroke="#cbd5e0" stroke-width="2"/>
                             <text x="300" y="262" class="city-label">La Serena</text>
                             <text x="300" y="240" class="badge-text" id="badge-la_serena" fill="#d69e2e"></text>
-                            <text x="300" y="232" class="truck-icon" id="truck-la_serena"></text>
                         </g>
 
                         <g class="city-dot" data-city="valparaiso" onclick="handleCityClick('valparaiso')">
                             <circle cx="120" cy="300" r="14" fill="#f7fafc" stroke="#cbd5e0" stroke-width="2"/>
                             <text x="120" y="322" class="city-label">Valparaíso</text>
                             <text x="120" y="300" class="badge-text" id="badge-valparaiso" fill="#d69e2e"></text>
-                            <text x="120" y="292" class="truck-icon" id="truck-valparaiso"></text>
                         </g>
 
                         <g class="city-dot" data-city="santiago" onclick="handleCityClick('santiago')">
                             <circle cx="260" cy="300" r="16" fill="#ebf8ff" stroke="#2b6cb0" stroke-width="3"/>
                             <text x="260" y="325" class="city-label">Santiago</text>
                             <text x="260" y="300" class="badge-text" id="badge-santiago" fill="#d69e2e"></text>
-                            <text x="260" y="292" class="truck-icon" id="truck-santiago">🚛</text>
                         </g>
 
                         <g class="city-dot" data-city="rancagua" onclick="handleCityClick('rancagua')">
                             <circle cx="400" cy="320" r="14" fill="#f7fafc" stroke="#cbd5e0" stroke-width="2"/>
                             <text x="400" y="342" class="city-label">Rancagua</text>
                             <text x="400" y="320" class="badge-text" id="badge-rancagua" fill="#d69e2e"></text>
-                            <text x="400" y="312" class="truck-icon" id="truck-rancagua"></text>
                         </g>
 
                         <g class="city-dot" data-city="los_angeles" onclick="handleCityClick('los_angeles')">
                             <circle cx="350" cy="400" r="14" fill="#f7fafc" stroke="#cbd5e0" stroke-width="2"/>
                             <text x="350" y="422" class="city-label">Los Ángeles</text>
                             <text x="350" y="400" class="badge-text" id="badge-los_angeles" fill="#d69e2e"></text>
-                            <text x="350" y="392" class="truck-icon" id="truck-los_angeles"></text>
                         </g>
 
                         <g class="city-dot" data-city="concepcion" onclick="handleCityClick('concepcion')">
                             <circle cx="180" cy="400" r="14" fill="#f7fafc" stroke="#cbd5e0" stroke-width="2"/>
                             <text x="180" y="422" class="city-label">Concepción</text>
                             <text x="180" y="400" class="badge-text" id="badge-concepcion" fill="#d69e2e"></text>
-                            <text x="180" y="392" class="truck-icon" id="truck-concepcion"></text>
                         </g>
 
                         <g class="city-dot" data-city="temuco" onclick="handleCityClick('temuco')">
                             <circle cx="280" cy="440" r="14" fill="#f7fafc" stroke="#cbd5e0" stroke-width="2"/>
                             <text x="280" y="462" class="city-label">Temuco</text>
                             <text x="280" y="440" class="badge-text" id="badge-temuco" fill="#d69e2e"></text>
-                            <text x="280" y="432" class="truck-icon" id="truck-temuco"></text>
                         </g>
 
                         <g class="city-dot" data-city="valdivia" onclick="handleCityClick('valdivia')">
                             <circle cx="180" cy="480" r="14" fill="#f7fafc" stroke="#cbd5e0" stroke-width="2"/>
                             <text x="180" y="502" class="city-label">Valdivia</text>
                             <text x="180" y="480" class="badge-text" id="badge-valdivia" fill="#d69e2e"></text>
-                            <text x="180" y="472" class="truck-icon" id="truck-valdivia"></text>
                         </g>
 
                         <g class="city-dot" data-city="puerto_montt" onclick="handleCityClick('puerto_montt')">
                             <circle cx="280" cy="520" r="14" fill="#f7fafc" stroke="#cbd5e0" stroke-width="2"/>
                             <text x="280" y="542" class="city-label">Pto. Montt</text>
                             <text x="280" y="520" class="badge-text" id="badge-puerto_montt" fill="#d69e2e"></text>
-                            <text x="280" y="512" class="truck-icon" id="truck-puerto_montt"></text>
                         </g>
                     </svg>
+
+                    <!-- CAMIÓN EN MOVIMIENTO -->
+                    <div class="truck-moving" id="truckMoving" style="display:block;">
+                        🚛
+                        <div class="shadow"></div>
+                    </div>
+
+                    <!-- BARRA DE PROGRESO -->
+                    <div class="travel-progress" id="travelProgress">
+                        <div class="info">
+                            <span>🚛 Viajando a <span class="highlight" id="travelDest">-</span></span>
+                            <span id="travelTime">0s / 0s</span>
+                        </div>
+                        <div class="bar">
+                            <div class="fill" id="travelFill"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="legend">
@@ -1177,7 +958,7 @@
                             <div class="center-line main"></div>
                             <div class="bottom-line main"></div>
                         </div>
-                        Ruta principal (más ancha)
+                        Ruta principal
                     </div>
                     <div class="item">
                         <div class="road-sample">
@@ -1197,7 +978,6 @@
 
             <!-- PANEL -->
             <div class="panel">
-                <!-- Camión -->
                 <div class="panel-card">
                     <h3>🚛 Mi Camión</h3>
                     <div class="truck-status">
@@ -1219,7 +999,6 @@
                         </div>
                     </div>
 
-                    <!-- ACCIONES DENTRO DEL CAMIÓN -->
                     <div class="truck-actions" id="truckActions">
                         <div style="color:#a0aec0;text-align:center;padding:10px;font-size:13px;">
                             Cargando acciones...
@@ -1242,7 +1021,6 @@
                     </div>
                 </div>
 
-                <!-- Guía de Despacho -->
                 <div class="panel-card">
                     <h3>📋 Guía de Despacho</h3>
                     <div class="dispatch-guide">
@@ -1258,7 +1036,6 @@
                     </div>
                 </div>
 
-                <!-- Órdenes Pendientes -->
                 <div class="panel-card">
                     <h3>📋 Encomiendas Pendientes <span id="pendingBadge" style="font-size:11px;color:#718096;font-weight:400;"></span></h3>
                     <div class="orders-list" id="ordersList">
@@ -1280,20 +1057,38 @@
         // CIUDADES
         // ============================================================
         const CITIES = [
-            { id: 'arica', name: 'Arica' },
-            { id: 'iquique', name: 'Iquique' },
-            { id: 'calama', name: 'Calama' },
-            { id: 'antofagasta', name: 'Antofagasta' },
-            { id: 'la_serena', name: 'La Serena' },
-            { id: 'valparaiso', name: 'Valparaíso' },
-            { id: 'santiago', name: 'Santiago' },
-            { id: 'rancagua', name: 'Rancagua' },
-            { id: 'los_angeles', name: 'Los Ángeles' },
-            { id: 'concepcion', name: 'Concepción' },
-            { id: 'temuco', name: 'Temuco' },
-            { id: 'valdivia', name: 'Valdivia' },
-            { id: 'puerto_montt', name: 'Pto. Montt' },
+            { id: 'arica', name: 'Arica', x: 300, y: 40 },
+            { id: 'iquique', name: 'Iquique', x: 160, y: 120 },
+            { id: 'calama', name: 'Calama', x: 460, y: 160 },
+            { id: 'antofagasta', name: 'Antofagasta', x: 300, y: 180 },
+            { id: 'la_serena', name: 'La Serena', x: 300, y: 240 },
+            { id: 'valparaiso', name: 'Valparaíso', x: 120, y: 300 },
+            { id: 'santiago', name: 'Santiago', x: 260, y: 300 },
+            { id: 'rancagua', name: 'Rancagua', x: 400, y: 320 },
+            { id: 'los_angeles', name: 'Los Ángeles', x: 350, y: 400 },
+            { id: 'concepcion', name: 'Concepción', x: 180, y: 400 },
+            { id: 'temuco', name: 'Temuco', x: 280, y: 440 },
+            { id: 'valdivia', name: 'Valdivia', x: 180, y: 480 },
+            { id: 'puerto_montt', name: 'Pto. Montt', x: 280, y: 520 },
         ];
+
+        // ============================================================
+        // DISTANCIAS
+        // ============================================================
+        const DISTANCES = {
+            'arica-iquique': 305, 'iquique-arica': 305,
+            'iquique-antofagasta': 403, 'antofagasta-iquique': 403,
+            'antofagasta-calama': 214, 'calama-antofagasta': 214,
+            'antofagasta-la_serena': 689, 'la_serena-antofagasta': 689,
+            'la_serena-santiago': 469, 'santiago-la_serena': 469,
+            'santiago-valparaiso': 115, 'valparaiso-santiago': 115,
+            'santiago-rancagua': 83, 'rancagua-santiago': 83,
+            'rancagua-los_angeles': 451, 'los_angeles-rancagua': 451,
+            'los_angeles-concepcion': 119, 'concepcion-los_angeles': 119,
+            'los_angeles-temuco': 343, 'temuco-los_angeles': 343,
+            'temuco-valdivia': 143, 'valdivia-temuco': 143,
+            'temuco-puerto_montt': 296, 'puerto_montt-temuco': 296,
+        };
 
         // ============================================================
         // CONEXIONES
@@ -1314,6 +1109,7 @@
         ];
 
         const MAX_CARGO = 6;
+        const COST_PER_KM = 2;
 
         // ============================================================
         // ESTADO
@@ -1332,7 +1128,16 @@
             autoInterval: null,
             autoSpeed: 15,
             ordersGenerated: 0,
-            pendingOrders: 0
+            pendingOrders: 0,
+            isTraveling: false,
+            travelProgress: 0,
+            travelStartTime: 0,
+            travelDuration: 0,
+            travelTarget: null,
+            travelFrom: null,
+            travelCost: 0,
+            travelDistance: 0,
+            animationFrame: null,
         };
 
         // ============================================================
@@ -1346,6 +1151,12 @@
         const truckCapacity = document.getElementById('truckCapacity');
         const methodIndicator = document.getElementById('methodIndicator');
         const truckActions = document.getElementById('truckActions');
+        const travelProgress = document.getElementById('travelProgress');
+        const travelFill = document.getElementById('travelFill');
+        const travelDest = document.getElementById('travelDest');
+        const travelTime = document.getElementById('travelTime');
+        const truckMoving = document.getElementById('truckMoving');
+        const mapContainer = document.getElementById('mapContainer');
 
         const moneyEl = document.getElementById('money');
         const deliveriesEl = document.getElementById('deliveries');
@@ -1387,11 +1198,12 @@
         document.getElementById('btnLIFO').addEventListener('click', () => setMethod('lifo'));
 
         // ============================================================
-        // GENERAR ENCOMIENDA AUTOMÁTICA
+        // GENERAR ENCOMIENDA AUTOMÁTICA (CORREGIDO)
         // ============================================================
         function generateAutoOrder() {
-            if (state.gameOver) return;
+            if (state.gameOver || state.isTraveling) return;
 
+            // Asegurar que hay al menos 2 ciudades disponibles
             const available = CITIES.filter(c => c.id !== state.truckPosition);
             if (available.length < 2) return;
 
@@ -1420,14 +1232,29 @@
         }
 
         // ============================================================
-        // AUTO TIMER
+        // AUTO TIMER (CORREGIDO)
         // ============================================================
         function startAutoTimer() {
+            // Limpiar intervalo anterior
             if (state.autoInterval) {
                 clearInterval(state.autoInterval);
+                state.autoInterval = null;
             }
 
             const intervalMs = state.autoSpeed * 1000;
+
+            // Generar ordenes iniciales con retraso para que la UI esté lista
+            setTimeout(() => {
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        if (state.autoActive && !state.gameOver) {
+                            generateAutoOrder();
+                        }
+                    }, i * 300);
+                }
+            }, 300);
+
+            // Configurar intervalo
             state.autoInterval = setInterval(() => {
                 if (state.autoActive && !state.gameOver) {
                     generateAutoOrder();
@@ -1435,12 +1262,14 @@
             }, intervalMs);
 
             timerDisplay.textContent = `${state.autoSpeed}s`;
-            document.getElementById('btnAutoToggle').textContent = '⏸️ Pausar';
+            const btnAuto = document.getElementById('btnAutoToggle');
+            if (btnAuto) btnAuto.textContent = '⏸️ Pausar';
         }
 
         function toggleAuto() {
             state.autoActive = !state.autoActive;
-            document.getElementById('btnAutoToggle').textContent = state.autoActive ? '⏸️ Pausar' : '▶️ Reanudar';
+            const btnAuto = document.getElementById('btnAutoToggle');
+            btnAuto.textContent = state.autoActive ? '⏸️ Pausar' : '▶️ Reanudar';
             showToast(state.autoActive ? '▶️ Encomiendas automáticas activadas' : '⏸️ Encomiendas automáticas pausadas',
                 'warning');
             if (state.autoActive) {
@@ -1449,9 +1278,162 @@
         }
 
         // ============================================================
-        // HANDLE CITY CLICK (SOLO MOVERSE)
+        // OBTENER DISTANCIA Y COORDENADAS
+        // ============================================================
+        function getDistance(from, to) {
+            const key = `${from}-${to}`;
+            return DISTANCES[key] || null;
+        }
+
+        function getCityCoords(id) {
+            const city = CITIES.find(c => c.id === id);
+            return city ? { x: city.x, y: city.y } : null;
+        }
+
+        // ============================================================
+        // ACTUALIZAR POSICIÓN DEL CAMIÓN
+        // ============================================================
+        function updateTruckPosition(x, y) {
+            const relX = (x / 600) * 100;
+            const relY = (y / 700) * 100;
+            truckMoving.style.left = `${relX}%`;
+            truckMoving.style.top = `${relY}%`;
+            truckMoving.style.display = 'block';
+        }
+
+        // ============================================================
+        // INICIAR VIAJE
+        // ============================================================
+        function startTravel(targetCityId) {
+            if (state.isTraveling) return;
+            if (state.truckPosition === targetCityId) {
+                showToast(`📍 Ya estás en ${getCityName(targetCityId)}`, '');
+                return;
+            }
+
+            const isConnected = CONNECTIONS.some(([a, b]) =>
+                (a === state.truckPosition && b === targetCityId) ||
+                (b === state.truckPosition && a === targetCityId)
+            );
+
+            if (!isConnected) {
+                showToast(`🚫 No hay ruta directa entre ${getCityName(state.truckPosition)} y ${getCityName(targetCityId)}`,
+                    'error');
+                return;
+            }
+
+            const distance = getDistance(state.truckPosition, targetCityId);
+            if (!distance) {
+                showToast('⚠️ Distancia no disponible', 'error');
+                return;
+            }
+
+            const cost = Math.round(distance * COST_PER_KM);
+            if (state.money < cost) {
+                showToast(`⚠️ No tienes suficiente dinero ($${cost})`, 'error');
+                return;
+            }
+
+            state.isTraveling = true;
+            state.travelFrom = state.truckPosition;
+            state.travelTarget = targetCityId;
+            state.travelCost = cost;
+            state.travelDistance = distance;
+            state.travelProgress = 0;
+
+            const duration = Math.max(0.5, distance / 80);
+            state.travelDuration = duration;
+            state.travelStartTime = Date.now();
+
+            travelProgress.classList.add('active');
+            travelDest.textContent = getCityName(targetCityId);
+
+            state.money -= cost;
+
+            showToast(`🚛 Viajando a ${getCityName(targetCityId)} (${distance}km, $${cost})`, 'success');
+
+            const fromCoords = getCityCoords(state.travelFrom);
+            if (fromCoords) {
+                updateTruckPosition(fromCoords.x, fromCoords.y);
+            }
+
+            document.getElementById('btnMove').disabled = true;
+            updateUI();
+
+            animateTravel();
+        }
+
+        // ============================================================
+        // ANIMAR VIAJE
+        // ============================================================
+        function animateTravel() {
+            if (!state.isTraveling) return;
+
+            const elapsed = (Date.now() - state.travelStartTime) / 1000;
+            const progress = Math.min(1, elapsed / state.travelDuration);
+
+            state.travelProgress = progress;
+
+            travelFill.style.width = `${progress * 100}%`;
+            travelTime.textContent = `${Math.round(elapsed)}s / ${Math.round(state.travelDuration)}s`;
+
+            const fromCoords = getCityCoords(state.travelFrom);
+            const toCoords = getCityCoords(state.travelTarget);
+
+            if (fromCoords && toCoords) {
+                const x = fromCoords.x + (toCoords.x - fromCoords.x) * progress;
+                const y = fromCoords.y + (toCoords.y - fromCoords.y) * progress;
+                updateTruckPosition(x, y);
+            }
+
+            if (progress < 1) {
+                state.animationFrame = requestAnimationFrame(animateTravel);
+            } else {
+                finishTravel();
+            }
+        }
+
+        // ============================================================
+        // FINALIZAR VIAJE
+        // ============================================================
+        function finishTravel() {
+            const targetId = state.travelTarget;
+
+            state.truckPosition = targetId;
+            state.isTraveling = false;
+            state.travelProgress = 1;
+
+            travelProgress.classList.remove('active');
+            travelFill.style.width = '0%';
+
+            const toCoords = getCityCoords(targetId);
+            if (toCoords) {
+                updateTruckPosition(toCoords.x, toCoords.y);
+            }
+
+            showToast(`✅ Llegaste a ${getCityName(targetId)}`, 'success');
+
+            updateUI();
+            document.getElementById('btnMove').disabled = false;
+
+            if (state.deliveries >= 20) {
+                state.gameOver = true;
+                showToast('🎉 ¡FELICITACIONES! 20 entregas completadas.', 'success');
+                if (state.autoInterval) {
+                    clearInterval(state.autoInterval);
+                }
+            }
+        }
+
+        // ============================================================
+        // HANDLE CITY CLICK
         // ============================================================
         function handleCityClick(cityId) {
+            if (state.isTraveling) {
+                showToast('⏳ Estás en viaje, espera a llegar', 'warning');
+                return;
+            }
+
             const city = CITIES.find(c => c.id === cityId);
             if (!city || state.gameOver) return;
 
@@ -1460,39 +1442,23 @@
                 return;
             }
 
-            const currentCityId = state.truckPosition;
-            const isConnected = CONNECTIONS.some(([a, b]) =>
-                (a === currentCityId && b === cityId) || (b === currentCityId && a === cityId)
-            );
-
-            if (!isConnected) {
-                const currentName = getCityName(currentCityId);
-                const targetName = city.name;
-                showToast(`🚫 No hay ruta directa entre ${currentName} y ${targetName}`, 'error');
-                return;
-            }
-
-            const fuelCost = 50 + Math.floor(Math.random() * 40);
-            if (state.money < fuelCost) {
-                showToast(`⚠️ No tienes suficiente dinero ($${fuelCost})`, 'error');
-                return;
-            }
-
-            state.money -= fuelCost;
-            state.truckPosition = cityId;
-            showToast(`🚛 Viajaste a ${city.name} ($${fuelCost})`, 'success');
-
-            updateUI();
+            startTravel(cityId);
         }
 
         // ============================================================
-        // CARGAR ENCOMIENDA (DESDE MI CAMIÓN)
+        // CARGAR ENCOMIENDA
         // ============================================================
         function loadOrder(orderId) {
-            if (state.gameOver) return;
+            if (state.gameOver || state.isTraveling) {
+                showToast('⏳ Espera a terminar el viaje', 'warning');
+                return;
+            }
 
             const order = state.orders.find(o => o.id === orderId);
-            if (!order || order.status !== 'pending') return;
+            if (!order || order.status !== 'pending') {
+                showToast('⚠️ Esta encomienda no está disponible', 'error');
+                return;
+            }
 
             if (state.truckPosition !== order.origin) {
                 showToast(`⚠️ Debes estar en ${getCityName(order.origin)} para cargar esta encomienda`, 'error');
@@ -1518,9 +1484,14 @@
         }
 
         // ============================================================
-        // ENTREGAR ENCOMIENDA (DESDE MI CAMIÓN)
+        // ENTREGAR ENCOMIENDA
         // ============================================================
         function deliverCargo() {
+            if (state.isTraveling) {
+                showToast('⏳ Estás en viaje, espera a llegar', 'warning');
+                return;
+            }
+
             const cityId = state.truckPosition;
 
             if (state.cargo.length === 0) {
@@ -1570,7 +1541,7 @@
         // GENERAR ENCOMIENDA MANUAL
         // ============================================================
         function generateOrder() {
-            if (state.gameOver) return;
+            if (state.gameOver || state.isTraveling) return;
 
             const available = CITIES.filter(c => c.id !== state.truckPosition);
             if (available.length < 2) return;
@@ -1602,55 +1573,48 @@
         // MOVER (DADO)
         // ============================================================
         function moveTruck() {
-            if (state.gameOver) return;
+            if (state.gameOver || state.isTraveling) return;
 
             const currentIndex = CITIES.findIndex(c => c.id === state.truckPosition);
             const dice = Math.floor(Math.random() * 3) + 1;
             const newIndex = Math.min(currentIndex + dice, CITIES.length - 1);
+            const targetCity = CITIES[newIndex];
 
-            const fuelCost = 50 + dice * 25;
-            if (state.money < fuelCost) {
-                showToast(`⚠️ No tienes suficiente dinero ($${fuelCost})`, 'error');
+            if (targetCity.id === state.truckPosition) {
+                showToast('🎲 No avanzaste', '');
                 return;
             }
 
-            state.money -= fuelCost;
-            state.truckPosition = CITIES[newIndex].id;
-
-            showToast(`🎲 Avanzaste ${dice} ciudades → ${CITIES[newIndex].name} ($${fuelCost})`, 'success');
-
-            updateUI();
+            startTravel(targetCity.id);
         }
 
         // ============================================================
-        // RENDER ACCIONES DE MI CAMIÓN
+        // RENDER ACCIONES
         // ============================================================
         function renderTruckActions() {
             const cityName = getCityName(state.truckPosition);
             const cityId = state.truckPosition;
 
-            // Encomiendas pendientes en esta ciudad (origen)
             const ordersHere = state.orders.filter(o =>
                 o.origin === cityId && o.status === 'pending'
             );
 
-            // Encomiendas para entregar en esta ciudad (destino)
             const toDeliver = state.cargo.filter(c => c.destination === cityId);
-
             const totalPending = state.orders.filter(o => o.status === 'pending').length;
 
             let html = `
                         <div style="font-size:12px;color:#4a5568;margin-bottom:6px;font-weight:600;">
                             📍 ${cityName} ${totalPending > 0 ? `<span style="color:#dd6b20;font-weight:400;">(${totalPending} disponibles)</span>` : ''}
+                            ${state.isTraveling ? `<span style="color:#e53e3e;font-weight:400;"> (🚛 Viajando...)</span>` : ''}
                         </div>
                     `;
 
-            // SECCIÓN: CARGAR
+            // CARGAR
             html += `<div class="action-section">`;
             if (ordersHere.length > 0) {
                 html += `<div class="section-title"><span class="icon">📦</span>Para cargar:</div>`;
                 ordersHere.forEach(order => {
-                    const canLoad = state.cargo.length < MAX_CARGO;
+                    const canLoad = state.cargo.length < MAX_CARGO && !state.isTraveling;
                     html += `
                                 <div class="order-row">
                                     <span>→ <span class="dest">${getCityName(order.destination)}</span></span>
@@ -1669,7 +1633,7 @@
             }
             html += `</div>`;
 
-            // SECCIÓN: ENTREGAR
+            // ENTREGAR
             html += `<div class="action-section">`;
             if (toDeliver.length > 0) {
                 html += `<div class="section-title"><span class="icon">✅</span>Para entregar:</div>`;
@@ -1686,7 +1650,7 @@
                             `;
                 });
                 html += `
-                            <button class="btn-deliver" onclick="deliverCargo()" ${state.cargo.length === 0 ? 'disabled' : ''}>
+                            <button class="btn-deliver" onclick="deliverCargo()" ${state.cargo.length === 0 || state.isTraveling ? 'disabled' : ''}>
                                 📦 Entregar ${state.method === 'fifo' ? '(FIFO)' : '(LIFO)'}
                             </button>
                         `;
@@ -1697,11 +1661,11 @@
             }
             html += `</div>`;
 
-            // Espacio disponible
             html += `
                         <div class="space-info">
                             <span>🚛 Espacio: ${state.cargo.length}/${MAX_CARGO}</span>
                             <span>💰 Dinero: $${state.money}</span>
+                            ${state.isTraveling ? `<span style="color:#e53e3e;">⏳ Viajando...</span>` : ''}
                         </div>
                     `;
 
@@ -1713,28 +1677,21 @@
         // ============================================================
         function renderDispatchGuide() {
             if (state.cargo.length === 0) {
-                dispatchList.innerHTML = `
-                            <div class="dispatch-empty">🚛 Sin encomiendas en el camión</div>
-                        `;
+                dispatchList.innerHTML =
+                `<div class="dispatch-empty">🚛 Sin encomiendas en el camión</div>`;
                 return;
             }
 
             let html = '';
             const method = state.method;
             const cargoCopy = [...state.cargo];
-
-            const orderedCargo = method === 'fifo' ?
-                cargoCopy :
-                [...cargoCopy].reverse();
+            const orderedCargo = method === 'fifo' ? cargoCopy : [...cargoCopy].reverse();
 
             orderedCargo.forEach((item, index) => {
                 const isNext = index === 0;
                 const orderNum = method === 'fifo' ? index + 1 : cargoCopy.length - index;
 
-                let statusClass = '';
-                let statusText = '';
-                let itemClass = '';
-
+                let statusClass = '', statusText = '', itemClass = '';
                 if (isNext) {
                     if (method === 'fifo') {
                         statusClass = 'next';
@@ -1764,7 +1721,7 @@
         }
 
         // ============================================================
-        // RENDER MAPA SVG
+        // RENDER MAPA
         // ============================================================
         function renderMap() {
             CITIES.forEach(city => {
@@ -1778,10 +1735,12 @@
                 }
             });
 
-            document.querySelectorAll('.truck-icon').forEach(el => el.textContent = '');
-
-            const truckCity = document.getElementById(`truck-${state.truckPosition}`);
-            if (truckCity) truckCity.textContent = '🚛';
+            // No mostrar camión en la ciudad durante el viaje (se muestra el que se mueve)
+            if (!state.isTraveling) {
+                // Mostrar camión en la ciudad actual
+                const cityDot = document.querySelector(`.city-dot[data-city="${state.truckPosition}"] .truck-icon`);
+                if (cityDot) cityDot.textContent = '🚛';
+            }
 
             const currentCity = document.querySelector(`.city-dot[data-city="${state.truckPosition}"] circle`);
             if (currentCity) {
@@ -1858,6 +1817,7 @@
         // Exponer funciones globalmente
         window.loadOrder = loadOrder;
         window.deliverCargo = deliverCargo;
+        window.handleCityClick = handleCityClick;
 
         // ============================================================
         // UPDATE UI
@@ -1872,7 +1832,7 @@
             pendingBadge.textContent = state.pendingOrders > 0 ? `(${state.pendingOrders} pendientes)` : '';
 
             const cityName = getCityName(state.truckPosition);
-            truckLocation.textContent = `📍 En: ${cityName}`;
+            truckLocation.textContent = `📍 En: ${cityName}${state.isTraveling ? ' (Viajando...)' : ''}`;
             truckCargo.textContent = `Encomiendas: ${state.cargo.length}/${MAX_CARGO}`;
 
             const slots = truckCapacity.querySelectorAll('.slot');
@@ -1894,7 +1854,6 @@
             renderDispatchGuide();
             renderTruckActions();
 
-            // Todas las órdenes
             if (state.orders.filter(o => o.status !== 'delivered').length === 0) {
                 ordersList.innerHTML =
                     `<div style="color:#a0aec0;text-align:center;padding:15px;font-size:13px;">Sin encomiendas activas</div>`;
@@ -1932,7 +1891,7 @@
 
             renderMap();
 
-            document.getElementById('btnMove').disabled = state.gameOver || state.money < 50;
+            document.getElementById('btnMove').disabled = state.gameOver || state.isTraveling || state.money < 50;
         }
 
         // ============================================================
@@ -1964,6 +1923,12 @@
 
             if (state.autoInterval) {
                 clearInterval(state.autoInterval);
+                state.autoInterval = null;
+            }
+
+            if (state.animationFrame) {
+                cancelAnimationFrame(state.animationFrame);
+                state.animationFrame = null;
             }
 
             state.money = 5000;
@@ -1976,11 +1941,32 @@
             state.gameOver = false;
             state.ordersGenerated = 0;
             state.pendingOrders = 0;
+            state.isTraveling = false;
+            state.travelProgress = 0;
+            state.travelTarget = null;
+            state.travelFrom = null;
 
-            for (let i = 0; i < 3; i++) generateAutoOrder();
-            if (state.autoActive) {
-                startAutoTimer();
+            travelProgress.classList.remove('active');
+            travelFill.style.width = '0%';
+
+            // Posicionar camión en Santiago
+            const startCoords = getCityCoords('santiago');
+            if (startCoords) {
+                updateTruckPosition(startCoords.x, startCoords.y);
+                truckMoving.style.display = 'block';
             }
+
+            // Generar órdenes iniciales
+            setTimeout(() => {
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => generateAutoOrder(), i * 300);
+                }
+            }, 500);
+
+            if (state.autoActive) {
+                setTimeout(() => startAutoTimer(), 1000);
+            }
+
             updateUI();
             showToast('🔄 Partida reiniciada', '');
         }
@@ -2020,14 +2006,22 @@
         // ============================================================
         // INICIO
         // ============================================================
-        for (let i = 0; i < 3; i++) generateAutoOrder();
+        // Posicionar camión inicial
+        const startCoords = getCityCoords('santiago');
+        if (startCoords) {
+            updateTruckPosition(startCoords.x, startCoords.y);
+            truckMoving.style.display = 'block';
+        }
+
+        // Iniciar timer y órdenes
         startAutoTimer();
+
         updateUI();
 
-        console.log('🚛 Carga Máxima - Carreteras Reales');
-        console.log('🛣️ Carreteras negras con líneas blancas como en la realidad');
-        console.log('📍 Cargar y Entregar desde "Mi Camión"');
-        console.log('📦 Cargar y Entregar son acciones separadas');
+        console.log('🚛 Carga Máxima - Control Total');
+        console.log('📍 Camión visible al inicio');
+        console.log('📦 Órdenes automáticas generándose');
+        console.log('📦 Cargar y Entregar son acciones MANUALES');
         console.log('📋 FIFO: primera en entrar, primera en salir');
         console.log('📋 LIFO: última en entrar, primera en salir');
         console.log('⌨️  M: Mover | D: Entregar | N: Orden | Space: Pausar | R: Reiniciar');
