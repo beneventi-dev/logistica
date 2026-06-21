@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🚛 Carga Máxima - Control Total</title>
+    <title>🚛 Carga Máxima - Carreteras Reales</title>
 
     <style>
         * {
@@ -230,33 +230,59 @@
             text-anchor: middle;
         }
 
-        .road {
-            stroke: #cbd5e0;
-            stroke-width: 3;
+        /* ===== CARRETERAS REALISTAS ===== */
+        .road-group {
+            transition: all 0.3s;
+        }
+
+        .road-group:hover .road-border {
+            stroke: #dd6b20;
+            stroke-width: 4;
+        }
+
+        .road-group:hover .road-center {
+            stroke: #dd6b20;
+            stroke-width: 1.5;
+        }
+
+        /* Líneas exteriores (bordes de la carretera) */
+        .road-border {
+            stroke: #4a5568;
+            stroke-width: 2.5;
             fill: none;
             stroke-linecap: round;
             stroke-linejoin: round;
         }
 
-        .road.highway {
-            stroke: #2b6cb0;
-            stroke-width: 4;
-            opacity: 0.7;
+        .road-border.main {
+            stroke-width: 3.5;
         }
 
-        .road.secondary {
-            stroke: #a0aec0;
+        .road-border.secondary {
             stroke-width: 2.5;
-            stroke-dasharray: 6, 4;
-            opacity: 0.6;
         }
 
-        .road:hover {
-            stroke: #dd6b20;
-            stroke-width: 4;
-            opacity: 1;
+        /* Línea central (separador de carriles) */
+        .road-center {
+            stroke: #a0aec0;
+            stroke-width: 1.2;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 6, 8;
         }
 
+        .road-center.main {
+            stroke-dasharray: 8, 10;
+            stroke-width: 1.5;
+        }
+
+        .road-center.secondary {
+            stroke-dasharray: 5, 7;
+            stroke-width: 1;
+        }
+
+        /* ===== LEYENDA ===== */
         .legend {
             display: flex;
             gap: 15px;
@@ -276,18 +302,47 @@
             gap: 5px;
         }
 
-        .legend .line {
-            width: 25px;
-            height: 4px;
-            border-radius: 2px;
+        .legend .road-sample {
+            display: flex;
+            flex-direction: column;
+            width: 30px;
+            height: 14px;
+            position: relative;
+            justify-content: center;
         }
 
-        .legend .line.highway {
-            background: #2b6cb0;
+        .legend .road-sample .top-line {
+            height: 2px;
+            width: 100%;
+            border-radius: 1px;
+            margin-bottom: 1px;
+            background: #4a5568;
         }
-        .legend .line.secondary {
-            background: #a0aec0;
+
+        .legend .road-sample .center-line {
+            height: 1px;
+            width: 100%;
+            border-radius: 1px;
+            background-image: repeating-linear-gradient(90deg, #a0aec0, #a0aec0 4px, transparent 4px, transparent 8px);
+            margin-bottom: 1px;
+        }
+
+        .legend .road-sample .bottom-line {
+            height: 2px;
+            width: 100%;
+            border-radius: 1px;
+            background: #4a5568;
+        }
+
+        .legend .road-sample .top-line.main {
+            height: 3px;
+        }
+        .legend .road-sample .bottom-line.main {
+            height: 3px;
+        }
+        .legend .road-sample .center-line.main {
             background-image: repeating-linear-gradient(90deg, #a0aec0, #a0aec0 6px, transparent 6px, transparent 10px);
+            height: 1.5px;
         }
 
         .legend .dot {
@@ -541,8 +596,6 @@
             justify-content: space-between;
             flex-wrap: wrap;
         }
-
-        /* ===== FIN ACCIONES ===== */
 
         .dispatch-guide {
             background: #ffffff;
@@ -907,6 +960,10 @@
                 font-size: 10px;
                 flex-wrap: wrap;
             }
+            .legend .road-sample {
+                width: 20px;
+                height: 12px;
+            }
         }
     </style>
 </head>
@@ -917,7 +974,7 @@
         <div class="header">
             <div>
                 <h1>🚛 Carga <span>Máxima</span></h1>
-                <span class="sub">Control Total - Cargar / Entregar</span>
+                <span class="sub">Carreteras Reales</span>
             </div>
             <div class="player-info">
                 <div class="item">💰 <span class="num gold" id="money">5000</span></div>
@@ -939,26 +996,86 @@
             <!-- MAPA -->
             <div class="map-section">
                 <h2>
-                    🗺️ Rutas de Encomiendas
+                    🗺️ Rutas de Chile
                     <span class="badge-auto">⚡ Generación Automática</span>
                 </h2>
                 <div class="map-container">
                     <svg class="map-svg" viewBox="0 0 600 700" xmlns="http://www.w3.org/2000/svg" id="mapSvg">
-                        <!-- CARRETERAS -->
-                        <path class="road highway" d="M300,40 L160,120" />
-                        <path class="road highway" d="M160,120 L300,180" />
-                        <path class="road secondary" d="M300,180 L460,160" />
-                        <path class="road highway" d="M300,180 L300,240" />
-                        <path class="road highway" d="M300,240 L260,300" />
-                        <path class="road secondary" d="M260,300 L120,300" />
-                        <path class="road secondary" d="M260,300 L400,320" />
-                        <path class="road highway" d="M400,320 L350,400" />
-                        <path class="road secondary" d="M350,400 L180,400" />
-                        <path class="road highway" d="M350,400 L280,440" />
-                        <path class="road secondary" d="M280,440 L180,480" />
-                        <path class="road highway" d="M280,440 L280,520" />
+                        <!-- ===== CARRETERAS REALISTAS ===== -->
 
-                        <!-- CIUDADES -->
+                        <!-- Ruta 1: Arica → Iquique (Principal) -->
+                        <g class="road-group">
+                            <path class="road-border main" d="M300,40 L160,120" />
+                            <path class="road-center main" d="M300,40 L160,120" />
+                        </g>
+
+                        <!-- Ruta 2: Iquique → Antofagasta (Principal) -->
+                        <g class="road-group">
+                            <path class="road-border main" d="M160,120 L300,180" />
+                            <path class="road-center main" d="M160,120 L300,180" />
+                        </g>
+
+                        <!-- Ruta 3: Antofagasta → Calama (Secundaria) -->
+                        <g class="road-group">
+                            <path class="road-border secondary" d="M300,180 L460,160" />
+                            <path class="road-center secondary" d="M300,180 L460,160" />
+                        </g>
+
+                        <!-- Ruta 4: Antofagasta → La Serena (Principal) -->
+                        <g class="road-group">
+                            <path class="road-border main" d="M300,180 L300,240" />
+                            <path class="road-center main" d="M300,180 L300,240" />
+                        </g>
+
+                        <!-- Ruta 5: La Serena → Santiago (Principal) -->
+                        <g class="road-group">
+                            <path class="road-border main" d="M300,240 L260,300" />
+                            <path class="road-center main" d="M300,240 L260,300" />
+                        </g>
+
+                        <!-- Ruta 6: Santiago → Valparaíso (Secundaria) -->
+                        <g class="road-group">
+                            <path class="road-border secondary" d="M260,300 L120,300" />
+                            <path class="road-center secondary" d="M260,300 L120,300" />
+                        </g>
+
+                        <!-- Ruta 7: Santiago → Rancagua (Secundaria) -->
+                        <g class="road-group">
+                            <path class="road-border secondary" d="M260,300 L400,320" />
+                            <path class="road-center secondary" d="M260,300 L400,320" />
+                        </g>
+
+                        <!-- Ruta 8: Rancagua → Los Ángeles (Principal) -->
+                        <g class="road-group">
+                            <path class="road-border main" d="M400,320 L350,400" />
+                            <path class="road-center main" d="M400,320 L350,400" />
+                        </g>
+
+                        <!-- Ruta 9: Los Ángeles → Concepción (Secundaria) -->
+                        <g class="road-group">
+                            <path class="road-border secondary" d="M350,400 L180,400" />
+                            <path class="road-center secondary" d="M350,400 L180,400" />
+                        </g>
+
+                        <!-- Ruta 10: Los Ángeles → Temuco (Principal) -->
+                        <g class="road-group">
+                            <path class="road-border main" d="M350,400 L280,440" />
+                            <path class="road-center main" d="M350,400 L280,440" />
+                        </g>
+
+                        <!-- Ruta 11: Temuco → Valdivia (Secundaria) -->
+                        <g class="road-group">
+                            <path class="road-border secondary" d="M280,440 L180,480" />
+                            <path class="road-center secondary" d="M280,440 L180,480" />
+                        </g>
+
+                        <!-- Ruta 12: Temuco → Puerto Montt (Principal) -->
+                        <g class="road-group">
+                            <path class="road-border main" d="M280,440 L280,520" />
+                            <path class="road-center main" d="M280,440 L280,520" />
+                        </g>
+
+                        <!-- ===== CIUDADES ===== -->
                         <g class="city-dot" data-city="arica" onclick="handleCityClick('arica')">
                             <circle cx="300" cy="40" r="14" fill="#ebf8ff" stroke="#2b6cb0" stroke-width="2.5"/>
                             <text x="300" y="62" class="city-label">Arica</text>
@@ -1054,8 +1171,22 @@
 
                 <div class="legend">
                     <span style="font-weight:600;color:#4a5568;">Leyenda:</span>
-                    <div class="item"><span class="line highway"></span> Ruta principal</div>
-                    <div class="item"><span class="line secondary"></span> Ruta secundaria</div>
+                    <div class="item">
+                        <div class="road-sample">
+                            <div class="top-line main"></div>
+                            <div class="center-line main"></div>
+                            <div class="bottom-line main"></div>
+                        </div>
+                        Ruta principal (más ancha)
+                    </div>
+                    <div class="item">
+                        <div class="road-sample">
+                            <div class="top-line"></div>
+                            <div class="center-line"></div>
+                            <div class="bottom-line"></div>
+                        </div>
+                        Ruta secundaria
+                    </div>
                     <div class="item"><span class="dot"></span> Ciudad</div>
                     <div class="item"><span class="dot has-cargo"></span> Con encomienda</div>
                     <div class="item"><span class="dot origin"></span> Origen</div>
@@ -1893,7 +2024,8 @@
         startAutoTimer();
         updateUI();
 
-        console.log('🚛 Carga Máxima - Control Total');
+        console.log('🚛 Carga Máxima - Carreteras Reales');
+        console.log('🛣️ Carreteras negras con líneas blancas como en la realidad');
         console.log('📍 Cargar y Entregar desde "Mi Camión"');
         console.log('📦 Cargar y Entregar son acciones separadas');
         console.log('📋 FIFO: primera en entrar, primera en salir');
